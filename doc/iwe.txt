@@ -1,0 +1,241 @@
+*iwe.txt*     IWE Neovim Plugin                                    *iwe* *iwe.nvim*
+
+================================================================================
+CONTENTS                                                          *iwe-contents*
+
+1. Introduction ............................ |iwe-introduction|
+2. Installation ............................ |iwe-installation|
+3. Configuration ........................... |iwe-configuration|
+4. Commands ................................ |iwe-commands|
+5. Key Mappings ............................ |iwe-mappings|
+6. Functions ............................... |iwe-functions|
+7. Health Checks ........................... |iwe-health|
+
+================================================================================
+INTRODUCTION                                                  *iwe-introduction*
+
+IWE (Interactive Writing Environment) is a Neovim plugin designed to enhance
+markdown editing workflows with LSP integration and writing-focused features.
+
+The plugin automatically integrates with the `iwes` LSP server when working
+with markdown files in directories containing a `.iwe` marker directory.
+
+To start using IWE, navigate to your notes directory and run:
+>
+    :IWE init
+<
+This creates a `.iwe` marker directory that identifies the notes root.
+
+Features:~
+• LSP integration with iwes server for .iwe projects
+• Telescope integration for finding IWE files across projects
+• Markdown-specific editing enhancements
+• Configurable key mappings via <Plug> system
+• Project initialization with :IWE init
+• Health checks and diagnostics
+
+================================================================================
+INSTALLATION                                                  *iwe-installation*
+
+The plugin requires the `iwes` LSP server to be installed and available in
+your PATH. Create a `.iwe` directory in your project root to enable LSP
+functionality.
+
+Required dependencies:
+• `nvim-telescope/telescope.nvim` for fuzzy finding functionality
+
+For enhanced functionality, the following optional dependencies are supported:
+• `render-markdown` plugin for enhanced display
+• `gitsigns` plugin for git integration
+• `nvim-telescope/telescope-ui-select.nvim` for UI selection
+• `xiyaowong/telescope-emoji.nvim` for emoji picker
+
+================================================================================
+CONFIGURATION                                                *iwe-configuration*
+
+The plugin can be configured by calling the setup function:
+>lua
+    require('iwe').setup({
+      lsp = {
+        cmd = { "iwes" },
+        name = "iwes",
+        debounce_text_changes = 500,
+        auto_format_on_save = true
+      },
+      mappings = {
+        enable_default_mappings = true,
+        enable_telescope_keybindings = false,
+        leader = "<leader>",
+        localleader = "<localleader>"
+      },
+      telescope = {
+        enabled = true,
+        setup_config = true,
+        load_extensions = { "ui-select", "emoji" }
+      }
+    })
+<
+
+Configuration Options:~
+
+*g:disable_iwe*         Disable the IWE plugin entirely
+*g:loaded_iwe*          Indicates the plugin has been loaded
+
+lsp.cmd                 Command to start LSP server
+lsp.name                Name of the LSP server
+lsp.debounce_text_changes    Debounce time for text changes (ms)
+lsp.auto_format_on_save      Enable automatic formatting on save
+
+mappings.enable_markdown_mappings   Enable core markdown editing key mappings
+mappings.enable_telescope_keybindings Enable telescope keybindings (gf, gs, ga, etc.)
+mappings.enable_lsp_keybindings     Enable LSP keybindings (<leader>e, gd, gi, etc.)
+mappings.leader                     Leader key for mappings
+mappings.localleader               Local leader key for mappings
+
+telescope.enabled               Enable Telescope integration
+telescope.setup_config          Auto-setup Telescope configuration
+telescope.load_extensions       Extensions to load automatically
+
+================================================================================
+COMMANDS                                                          *iwe-commands*
+
+                                                                          *:IWE*
+:IWE {subcommand}       Main IWE command with subcommands
+
+    init               Initialize IWE project in current directory
+
+    lsp {action}        Control LSP server
+                        Actions: start, stop, restart, status
+
+    telescope {action} Control Telescope pickers
+                        Actions: find_files, paths, roots, grep, backlinks,
+                        headers, setup
+
+    info               Show plugin configuration and status
+
+
+================================================================================
+KEY MAPPINGS                                                      *iwe-mappings*
+
+The plugin provides <Plug> mappings that users can map to their preferred keys.
+
+Markdown Mappings (when enable_markdown_mappings = true):~
+
+In markdown files:
+  `-`               <Plug>(iwe-checklist-format)
+  `<C-n>`           <Plug>(iwe-link-next)
+  `<C-p>`           <Plug>(iwe-link-prev)
+
+Insert mode in markdown files:
+  `/d`              <Plug>(iwe-insert-date)
+  `/w`              <Plug>(iwe-insert-week)
+
+Global (Neovide only):
+  `<D-l>`           <Plug>(iwe-lsp-start)
+
+Telescope keybindings (when enable_telescope_keybindings = true):
+  `gf`              <Plug>(iwe-telescope-find-files)
+  `gs`              <Plug>(iwe-telescope-paths)
+  `ga`              <Plug>(iwe-telescope-roots)
+  `g/`              <Plug>(iwe-telescope-grep)
+  `gr`              <Plug>(iwe-telescope-backlinks)
+  `go`              <Plug>(iwe-telescope-headers)
+
+LSP keybindings (when enable_lsp_keybindings = true):
+  `<leader>e`       <Plug>(iwe-lsp-extract-section)
+  `<leader>i`       <Plug>(iwe-lsp-inline-reference)
+  `<leader>h`       <Plug>(iwe-lsp-rewrite-list-section)
+  `<leader>l`       <Plug>(iwe-lsp-rewrite-section-list)
+  `<leader>m`       <Plug>(iwe-lsp-code-action)
+  `<leader>c`       <Plug>(iwe-lsp-rename)
+  `gD`              <Plug>(iwe-lsp-declaration)
+  `gd`              <Plug>(iwe-lsp-definition)
+  `gi`              <Plug>(iwe-lsp-implementation)
+  `[d`              <Plug>(iwe-lsp-diagnostic-prev)
+  `]d`              <Plug>(iwe-lsp-diagnostic-next)
+  `<CR>`            <Plug>(iwe-lsp-definition)
+
+Available <Plug> Mappings:~
+
+*<Plug>(iwe-checklist-format)*     Format current line as checklist item
+*<Plug>(iwe-link-next)*            Navigate to next link
+*<Plug>(iwe-link-prev)*            Navigate to previous link
+*<Plug>(iwe-insert-date)*          Insert current date
+*<Plug>(iwe-insert-week)*          Insert current week
+*<Plug>(iwe-lsp-start)*            Manually start IWE LSP server
+*<Plug>(iwe-telescope-find-files)* Find files (gf equivalent)
+*<Plug>(iwe-telescope-paths)*      Workspace symbols - paths (gs equivalent)
+*<Plug>(iwe-telescope-roots)*      Namespace symbols - roots (ga equivalent)
+*<Plug>(iwe-telescope-grep)*       Live grep search (g/ equivalent)
+*<Plug>(iwe-telescope-backlinks)*  LSP references - backlinks (gr equivalent)
+*<Plug>(iwe-telescope-headers)*    Document symbols - headers (go equivalent)
+*<Plug>(iwe-lsp-extract-section)*  Extract section (refactor)
+*<Plug>(iwe-lsp-inline-reference)* Inline reference (refactor)
+*<Plug>(iwe-lsp-rewrite-list-section)* Rewrite list section (refactor)
+*<Plug>(iwe-lsp-rewrite-section-list)* Rewrite section list (refactor)
+*<Plug>(iwe-lsp-code-action)*      Show code actions
+*<Plug>(iwe-lsp-declaration)*      Go to declaration
+*<Plug>(iwe-lsp-definition)*       Go to definition
+*<Plug>(iwe-lsp-implementation)*   Go to implementation
+*<Plug>(iwe-lsp-rename)*           Rename linked file
+*<Plug>(iwe-lsp-diagnostic-prev)*  Go to previous diagnostic
+*<Plug>(iwe-lsp-diagnostic-next)*  Go to next diagnostic
+
+================================================================================
+FUNCTIONS                                                        *iwe-functions*
+
+require('iwe').setup({opts})                                    *iwe.setup()*
+    Configure the IWE plugin with user options.
+
+require('iwe').get_project_root()                      *iwe.get_project_root()*
+    Get the current IWE project root directory (containing .iwe marker).
+
+require('iwe').is_in_project()                            *iwe.is_in_project()*
+    Check if current buffer/directory is in an IWE project.
+
+require('iwe').start_lsp({bufnr})                            *iwe.start_lsp()*
+    Start the IWE LSP server for the specified buffer.
+
+require('iwe').lsp_available()                            *iwe.lsp_available()*
+    Check if the iwes LSP server is available in PATH.
+
+require('iwe').get_config()                                *iwe.get_config()*
+    Get the current plugin configuration.
+
+require('iwe.telescope').pickers.find_files()        *iwe.telescope.pickers*
+    Launch Telescope find files picker (gf equivalent).
+
+require('iwe.telescope').pickers.paths()             *iwe.telescope.paths*
+    Launch workspace symbols picker - paths (gs equivalent).
+
+require('iwe.telescope').pickers.roots()             *iwe.telescope.roots*
+    Launch namespace symbols picker - roots (ga equivalent).
+
+require('iwe.telescope').pickers.grep()              *iwe.telescope.grep*
+    Launch live grep picker (g/ equivalent).
+
+require('iwe.telescope').pickers.backlinks()         *iwe.telescope.backlinks*
+    Launch LSP references picker - backlinks (gr equivalent).
+
+require('iwe.telescope').pickers.headers()           *iwe.telescope.headers*
+    Launch document symbols picker - headers (go equivalent).
+
+
+================================================================================
+HEALTH CHECKS                                                      *iwe-health*
+
+Use |:checkhealth| to diagnose plugin issues:
+>
+    :checkhealth iwe
+<
+
+The health check verifies:
+• iwes LSP server availability
+• .iwe project marker existence
+• Configuration path validity
+• Telescope availability and extensions
+• Optional dependencies
+• Current LSP server status
+
+================================================================================
+vim:tw=78:ts=8:ft=help:norl:
