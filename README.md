@@ -1,6 +1,6 @@
 # IWE Neovim Plugin
 
-> **About IWE**: This plugin integrates with the [IWE](https://github.com/iwe-org/iwe) - an LSP/CLI designed for markdown-based knowledge management and note-taking workflows.
+**About IWE**: This plugin integrates with the [IWE](https://github.com/iwe-org/iwe) - an LSP/CLI designed for markdown-based knowledge management and note-taking workflows.
 
 You can learn more at [IWE.md](https://iwe.md)
 
@@ -20,7 +20,7 @@ Add to your Neovim configuration (using lazy.nvim):
 
 ```lua
 {
-  'your-username/iwe.nvim',
+  'iwe-org/iwe.nvim',
   dependencies = {
     'nvim-telescope/telescope.nvim',  -- Required
   },
@@ -231,37 +231,6 @@ Run `:checkhealth iwe` to diagnose any issues with:
 - Telescope integration
 - Project structure
 - Dependencies
-
-## Architecture
-
-Modern plugin structure following 2024-2025 best practices:
-
-```
-lua/iwe/
-├── init.lua         # Main plugin with auto-initialization
-├── config.lua       # Type-safe configuration
-├── lsp.lua          # LSP integration
-├── telescope.lua    # Telescope pickers
-├── commands.lua     # User commands
-├── mappings.lua     # Key mappings
-└── health.lua       # Health diagnostics
-```
-
-## `.iwe` Directory Structure
-
-The `.iwe` marker directory identifies IWE project roots:
-
-```
-your-notes/
-├── .iwe/           # Marker directory (created by :IWE init)
-├── index.md        # Your notes
-├── projects/
-│   └── readme.md
-└── ideas/
-    └── brainstorm.md
-```
-
-This approach allows you to have multiple IWE projects and easily discover them with Telescope.
 
 ## Contributing
 
