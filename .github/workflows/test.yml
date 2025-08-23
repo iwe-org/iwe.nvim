@@ -41,7 +41,6 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
-    if: false  # Disable linting for now to focus on core functionality
     steps:
     - uses: actions/checkout@v4
     
