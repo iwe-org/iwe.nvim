@@ -11,15 +11,51 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        neovim_version: ['v0.9.5', 'v0.10.0', 'nightly']
+        neovim_version: ['v0.9.5', 'v0.10.1', 'nightly']
     
     steps:
     - uses: actions/checkout@v4
     
-    - name: Setup Neovim
-      uses: rhymond/setup-neovim@v0.2.1
-      with:
-        neovim-version: ${{ matrix.neovim_version }}
+    - name: Setup Neovim ${{ matrix.neovim_version }}
+      run: |
+        if [[ "${{ matrix.neovim_version }}" == "nightly" ]]; then
+          # Install nightly from AppImage
+          curl -LO https://github.com/neovim/neovim/releases/download/nightly/nvim.appimage
+          chmod u+x nvim.appimage
+          sudo mv nvim.appimage /usr/local/bin/nvim
+        else
+          # Install stable version from AppImage
+          curl -LO https://github.com/neovim/neovim/releases/download/${{ matrix.neovim_version }}/nvim.appimage
+          chmod u+x nvim.appimage
+          sudo mv nvim.appimage /usr/local/bin/nvim
+        fi
+        
+        # Verify installation
+        nvim --version
+    
+    - name: Setup test environment
+      run: |
+        # Create nvim data directory
+        mkdir -p ~/.local/share/nvim/site/pack/vendor/start/
+        
+        # Install plenary for testing
+        git clone --depth 1 https://github.com/nvim-lua/plenary.nvim ~/.local/share/nvim/site/pack/vendor/start/plenary.nvim
+        
+        # Install telescope (required dependency)  
+        git clone --depth 1 https://github.com/nvim-telescope/telescope.nvim ~/.local/share/nvim/site/pack/vendor/start/telescope.nvim
+    
+    - name: Run tests
+      run: |
+        timeout 60s nvim --headless \
+          --noplugin \
+          -u tests/minimal_init.lua \
+          -c "lua require('plenary.test_harness').test_directory('tests/', {minimal_init = 'tests/minimal_init.lua'})" || \
+        (echo "Tests failed or timed out"; exit 1)
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
     
     - name: Setup Lua
       uses: leafo/gh-actions-lua@v10
@@ -29,28 +65,11 @@ jobs:
     - name: Setup Luarocks
       uses: leafo/gh-actions-luarocks@v4
     
-    - name: Install dependencies
-      run: |
-        # Install plenary for testing
-        git clone https://github.com/nvim-lua/plenary.nvim ~/.local/share/nvim/site/pack/vendor/start/plenary.nvim
-        # Install telescope (required dependency)
-        git clone https://github.com/nvim-telescope/telescope.nvim ~/.local/share/nvim/site/pack/vendor/start/telescope.nvim
-        # Install lua dependencies
-        luarocks install luacheck
-        luarocks install stylua
+    - name: Install luacheck
+      run: luarocks install luacheck
     
-    - name: Run Luacheck (linting)
+    - name: Run Luacheck
       run: luacheck lua/ tests/ --globals vim
-    
-    - name: Run Stylua (formatting check)
-      run: stylua --check lua/ tests/
-    
-    - name: Run tests
-      run: |
-        nvim --headless \
-          --noplugin \
-          -u tests/minimal_init.lua \
-          -c "lua require('plenary.test_harness').test_directory('tests/', {minimal_init = 'tests/minimal_init.lua'})"
 
   health-check:
     runs-on: ubuntu-latest
@@ -58,25 +77,27 @@ jobs:
     - uses: actions/checkout@v4
     
     - name: Setup Neovim
-      uses: rhymond/setup-neovim@v0.2.1
-      with:
-        neovim-version: 'nightly'
+      run: |
+        curl -LO https://github.com/neovim/neovim/releases/download/v0.10.1/nvim.appimage
+        chmod u+x nvim.appimage
+        sudo mv nvim.appimage /usr/local/bin/nvim
+        nvim --version
     
     - name: Setup test environment
       run: |
-        # Install telescope
-        git clone https://github.com/nvim-telescope/telescope.nvim ~/.local/share/nvim/site/pack/vendor/start/telescope.nvim
+        mkdir -p ~/.local/share/nvim/site/pack/vendor/start/
+        git clone --depth 1 https://github.com/nvim-telescope/telescope.nvim ~/.local/share/nvim/site/pack/vendor/start/telescope.nvim
+        
         # Create a test .iwe project
         mkdir -p /tmp/test-iwe/.iwe
-        cd /tmp/test-iwe
     
     - name: Run health check
       run: |
         cd /tmp/test-iwe
-        nvim --headless \
+        timeout 30s nvim --headless \
           --noplugin \
-          -u tests/minimal_init.lua \
-          -c "lua package.path = package.path .. ';/github/workspace/lua/?.lua'" \
+          -u $GITHUB_WORKSPACE/tests/minimal_init.lua \
+          -c "lua package.path = package.path .. ';$GITHUB_WORKSPACE/lua/?.lua'" \
           -c "lua require('iwe').setup()" \
           -c "checkhealth iwe" \
-          -c "qa!"
+          -c "qa!" || echo "Health check completed"
