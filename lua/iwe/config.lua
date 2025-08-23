@@ -65,7 +65,7 @@ local function validate_config(opts)
       return false, "lsp.debounce_text_changes must be a number"
     end
   end
-  
+
   if opts.telescope then
     if opts.telescope.enabled ~= nil and type(opts.telescope.enabled) ~= "boolean" then
       return false, "telescope.enabled must be a boolean"
@@ -77,7 +77,7 @@ local function validate_config(opts)
       return false, "telescope.load_extensions must be an array"
     end
   end
-  
+
   return true, nil
 end
 
@@ -85,13 +85,13 @@ end
 ---@param opts? IWE.Config User configuration options
 function M.setup(opts)
   opts = opts or {}
-  
+
   local success, error = validate_config(opts)
   if not success then
     vim.notify(string.format("IWE configuration error: %s", error), vim.log.levels.ERROR)
     return
   end
-  
+
   M.options = vim.tbl_deep_extend("force", M.defaults, opts)
 end
 
@@ -107,14 +107,14 @@ end
 function M.get_value(key)
   local keys = vim.split(key, ".", { plain = true })
   local value = M.options
-  
+
   for _, k in ipairs(keys) do
     if type(value) ~= "table" or value[k] == nil then
       return nil
     end
     value = value[k]
   end
-  
+
   return value
 end
 

@@ -9,7 +9,7 @@ describe('IWE Commands', function()
   it('should validate command structure', function()
     local commands = vim.api.nvim_get_commands({})
     local iwe_cmd = commands['IWE']
-    
+
     assert.is_not_nil(iwe_cmd)
     assert.are.equal(iwe_cmd.name, 'IWE')
     assert.is_true(iwe_cmd.complete ~= nil)

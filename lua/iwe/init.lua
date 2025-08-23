@@ -16,15 +16,15 @@ end
 function M.setup(opts)
   -- Setup configuration first
   config.setup(opts)
-  
+
   -- Setup core functionality immediately
   require('iwe.commands').setup()
   require('iwe.mappings').setup_plug_mappings()
-  
+
   -- Setup components that can be loaded immediately
   require('iwe.lsp').setup_autocmds()
   require('iwe.mappings').setup_markdown_mappings()
-  
+
   -- Setup Telescope integration if enabled
   local telescope_config = config.get().telescope
   if telescope_config.enabled and telescope_config.setup_config then

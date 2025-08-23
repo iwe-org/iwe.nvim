@@ -37,7 +37,6 @@ end
 local function check_project_structure()
   health.start('IWE Project Structure')
 
-  local config = require('iwe.config').get()
   local found_iwe_marker = false
 
   -- Check for .iwe marker using vim.fs.root
@@ -165,3 +164,4 @@ function M.check()
 end
 
 return M
+

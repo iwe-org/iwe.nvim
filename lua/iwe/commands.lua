@@ -21,12 +21,12 @@ end
 local function init_iwe_project()
   local cwd = vim.fn.getcwd()
   local iwe_dir = cwd .. '/.iwe'
-  
+
   if vim.fn.isdirectory(iwe_dir) == 1 then
     vim.notify("IWE project already initialized in " .. cwd, vim.log.levels.INFO)
     return
   end
-  
+
   -- Check if iwe command is available
   if vim.fn.executable('iwe') == 1 then
     -- Use external iwe init command if available
@@ -72,7 +72,7 @@ local function handle_lsp_command(subcmd)
   elseif subcmd == 'status' then
     local clients = vim.lsp.get_clients({ name = 'iwes' })
     if #clients > 0 then
-      vim.notify(string.format("IWE LSP server is running (%d client%s)", 
+      vim.notify(string.format("IWE LSP server is running (%d client%s)",
         #clients, #clients == 1 and "" or "s"))
     else
       vim.notify("IWE LSP server is not running")
@@ -114,15 +114,15 @@ end
 ---@param opts table Command options from nvim_create_user_command
 local function iwe_command(opts)
   local args = opts.fargs
-  
+
   if #args == 0 then
     -- Show help when no arguments
     vim.cmd('help iwe')
     return
   end
-  
+
   local subcmd = args[1]
-  
+
   if subcmd == 'lsp' then
     if #args < 2 then
       vim.notify("Usage: IWE lsp <start|stop|restart|status>", vim.log.levels.ERROR)
@@ -163,15 +163,15 @@ local function iwe_command(opts)
       "Status:",
       string.format("  LSP Available: %s", lsp.is_available() and "Yes" or "No")
     }
-    
+
     local clients = vim.lsp.get_clients({ name = 'iwes' })
     table.insert(lines, string.format("  LSP Running: %s", #clients > 0 and "Yes" or "No"))
     table.insert(lines, string.format("  Telescope Available: %s", telescope.is_available() and "Yes" or "No"))
-    
+
     -- Check for .iwe marker in current directory
     local iwe_root = vim.fs.root(0, {'.iwe'})
     table.insert(lines, string.format("  IWE Project Root: %s", iwe_root or "Not found"))
-    
+
     -- Print each line separately to ensure proper formatting
     for _, line in ipairs(lines) do
       print(line)
@@ -185,12 +185,12 @@ end
 ---Complete function for IWE command
 ---@param arg_lead string Current argument being completed
 ---@param cmd_line string Full command line
----@param cursor_pos number Cursor position
+---@param _ number Cursor position
 ---@return string[]
-local function complete_iwe_command(arg_lead, cmd_line, cursor_pos)
+local function complete_iwe_command(arg_lead, cmd_line, _)
   local args = vim.split(cmd_line, '%s+')
   local arg_count = #args - 1  -- Subtract 1 for the command itself
-  
+
   -- If we're completing the first argument after IWE
   if arg_count == 1 then
     local subcommands = { 'lsp', 'telescope', 'tel', 'init', 'info' }
@@ -198,7 +198,7 @@ local function complete_iwe_command(arg_lead, cmd_line, cursor_pos)
       return cmd:find('^' .. vim.pesc(arg_lead))
     end, subcommands)
   end
-  
+
   -- If we're completing the second argument
   if arg_count == 2 then
     local subcmd = args[2]
@@ -208,7 +208,7 @@ local function complete_iwe_command(arg_lead, cmd_line, cursor_pos)
       return complete_telescope_commands()
     end
   end
-  
+
   return {}
 end
 
@@ -219,8 +219,6 @@ function M.setup()
     complete = complete_iwe_command,
     desc = 'IWE plugin commands'
   })
-  
-  
 end
 
 return M

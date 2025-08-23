@@ -1,7 +1,7 @@
 ---@class IWE.Telescope
 local M = {}
 
-local config = require('iwe.config')
+local _ = require('iwe.config')
 
 ---Check if Telescope is available
 ---@return boolean
@@ -18,7 +18,7 @@ function M.setup()
 
   local telescope = require('telescope')
   local actions = require('telescope.actions')
-  
+
   telescope.setup({
     defaults = {
       mappings = {
@@ -146,7 +146,7 @@ function pickers.find_files()
     vim.notify("Telescope not available", vim.log.levels.ERROR)
     return
   end
-  
+
   require('telescope.builtin').find_files({
     layout_config = {
       horizontal = {
@@ -165,7 +165,7 @@ function pickers.paths()
     vim.notify("Telescope not available", vim.log.levels.ERROR)
     return
   end
-  
+
   require('telescope.builtin').lsp_dynamic_workspace_symbols({
     prompt_title = "IWE Paths",
     fname_width = 0,
@@ -188,7 +188,7 @@ function pickers.roots()
     vim.notify("Telescope not available", vim.log.levels.ERROR)
     return
   end
-  
+
   require('telescope.builtin').lsp_dynamic_workspace_symbols({
     symbols = { "namespace" },
     prompt_title = "IWE Roots",
@@ -209,7 +209,7 @@ function pickers.backlinks()
     vim.notify("Telescope not available", vim.log.levels.ERROR)
     return
   end
-  
+
   require('telescope.builtin').lsp_references({
     prompt_title = "IWE Backlinks",
     layout_config = {
@@ -229,7 +229,7 @@ function pickers.headers()
     vim.notify("Telescope not available", vim.log.levels.ERROR)
     return
   end
-  
+
   require('telescope.builtin').lsp_document_symbols({
     prompt_title = "IWE Headers",
     layout_config = {
@@ -249,7 +249,7 @@ function pickers.grep()
     vim.notify("Telescope not available", vim.log.levels.ERROR)
     return
   end
-  
+
   require('telescope.builtin').live_grep({
     prompt_title = "Live Grep",
     layout_config = {
@@ -268,3 +268,4 @@ end
 M.pickers = pickers
 
 return M
+
