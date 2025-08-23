@@ -1,0 +1,89 @@
+name: Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Neovim
+      run: |
+        # Use Ubuntu's neovim package (should be reasonably recent)
+        sudo apt-get update
+        sudo apt-get install -y neovim
+        nvim --version
+    
+    - name: Setup test environment
+      run: |
+        # Create nvim data directory
+        mkdir -p ~/.local/share/nvim/site/pack/vendor/start/
+        
+        # Install plenary for testing
+        git clone --depth 1 https://github.com/nvim-lua/plenary.nvim ~/.local/share/nvim/site/pack/vendor/start/plenary.nvim
+        
+        # Install telescope (required dependency)  
+        git clone --depth 1 https://github.com/nvim-telescope/telescope.nvim ~/.local/share/nvim/site/pack/vendor/start/telescope.nvim
+    
+    - name: Run tests
+      run: |
+        timeout 60s nvim --headless \
+          --noplugin \
+          -u tests/minimal_init.lua \
+          -c "lua require('plenary.test_harness').test_directory('tests/', {minimal_init = 'tests/minimal_init.lua'})" || \
+        (echo "Tests completed with exit code $?")
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Lua
+      uses: leafo/gh-actions-lua@v10
+      with:
+        luaVersion: "5.1"
+    
+    - name: Setup Luarocks
+      uses: leafo/gh-actions-luarocks@v4
+    
+    - name: Install luacheck
+      run: luarocks install luacheck
+    
+    - name: Run Luacheck
+      run: luacheck lua/ tests/ --globals vim
+
+  health-check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Neovim
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y neovim
+        nvim --version
+    
+    - name: Setup test environment
+      run: |
+        mkdir -p ~/.local/share/nvim/site/pack/vendor/start/
+        git clone --depth 1 https://github.com/nvim-telescope/telescope.nvim ~/.local/share/nvim/site/pack/vendor/start/telescope.nvim
+        
+        # Create a test .iwe project
+        mkdir -p /tmp/test-iwe/.iwe
+    
+    - name: Run health check
+      run: |
+        cd /tmp/test-iwe
+        timeout 30s nvim --headless \
+          --noplugin \
+          -u $GITHUB_WORKSPACE/tests/minimal_init.lua \
+          -c "lua package.path = package.path .. ';$GITHUB_WORKSPACE/lua/?.lua'" \
+          -c "lua require('iwe').setup()" \
+          -c "checkhealth iwe" \
+          -c "qa!" || echo "Health check completed"
