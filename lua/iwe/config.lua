@@ -9,6 +9,7 @@
 ---@field name string Name of the LSP server
 ---@field debounce_text_changes number Debounce time for text changes
 ---@field auto_format_on_save boolean Whether to format on save
+---@field enable_inlay_hints boolean Whether to enable inlay hints
 
 ---@class IWE.Config.Mappings
 ---@field enable_markdown_mappings boolean Whether to enable core markdown editing key mappings
@@ -30,7 +31,8 @@ M.defaults = {
     cmd = { "iwes" },
     name = "iwes",
     debounce_text_changes = 500,
-    auto_format_on_save = true
+    auto_format_on_save = true,
+    enable_inlay_hints = true
   },
   mappings = {
     enable_markdown_mappings = true,

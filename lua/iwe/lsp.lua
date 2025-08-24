@@ -9,6 +9,23 @@ function M.is_available()
   return vim.fn.executable('iwes') == 1
 end
 
+---Toggle inlay hints for the current buffer
+---@param bufnr? number Buffer number (defaults to current buffer)
+function M.toggle_inlay_hints(bufnr)
+  bufnr = bufnr or vim.api.nvim_get_current_buf()
+  
+  if not vim.lsp.inlay_hint then
+    vim.notify("Inlay hints not available in this Neovim version", vim.log.levels.WARN)
+    return
+  end
+
+  local enabled = vim.lsp.inlay_hint.is_enabled({ bufnr = bufnr })
+  vim.lsp.inlay_hint.enable(not enabled, { bufnr = bufnr })
+  
+  local status = enabled and "disabled" or "enabled"
+  vim.notify(string.format("Inlay hints %s", status), vim.log.levels.INFO)
+end
+
 ---Start the IWE LSP server for the current buffer
 ---@param bufnr? number Buffer number (defaults to current buffer)
 function M.start(bufnr)
@@ -50,12 +67,18 @@ function M.setup_autocmds()
   })
 
   -- Setup LSP attach behavior
-  if opts.lsp.auto_format_on_save then
-    vim.api.nvim_create_autocmd("LspAttach", {
-      group = vim.api.nvim_create_augroup("IWE_LSP_Attach", { clear = true }),
-      callback = function(args)
-        local client = vim.lsp.get_client_by_id(args.data.client_id)
-        if client and client.name == opts.lsp.name then
+  vim.api.nvim_create_autocmd("LspAttach", {
+    group = vim.api.nvim_create_augroup("IWE_LSP_Attach", { clear = true }),
+    callback = function(args)
+      local client = vim.lsp.get_client_by_id(args.data.client_id)
+      if client and client.name == opts.lsp.name then
+        -- Enable inlay hints if configured and supported
+        if opts.lsp.enable_inlay_hints and vim.lsp.inlay_hint and client.supports_method('textDocument/inlayHint') then
+          vim.lsp.inlay_hint.enable(true, { bufnr = args.buf })
+        end
+
+        -- Setup auto-formatting on save if enabled
+        if opts.lsp.auto_format_on_save then
           vim.api.nvim_create_autocmd("BufWritePre", {
             buffer = args.buf,
             callback = function()
@@ -78,10 +101,10 @@ function M.setup_autocmds()
             desc = 'Format IWE markdown on save'
           })
         end
-      end,
-      desc = 'Setup IWE LSP formatting on attach'
-    })
-  end
+      end
+    end,
+    desc = 'Setup IWE LSP features on attach'
+  })
 end
 
 return M

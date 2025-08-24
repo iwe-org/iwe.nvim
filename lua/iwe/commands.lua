@@ -8,7 +8,7 @@ local telescope = require('iwe.telescope')
 ---Get completion for LSP commands
 ---@return string[]
 local function complete_lsp_commands()
-  return { 'start', 'stop', 'restart', 'status' }
+  return { 'start', 'stop', 'restart', 'status', 'toggle_inlay_hints' }
 end
 
 ---Get completion for Telescope commands
@@ -77,6 +77,8 @@ local function handle_lsp_command(subcmd)
     else
       vim.notify("IWE LSP server is not running")
     end
+  elseif subcmd == 'toggle_inlay_hints' then
+    lsp.toggle_inlay_hints()
   else
     vim.notify(string.format("Unknown LSP command: %s", subcmd), vim.log.levels.ERROR)
   end
@@ -125,7 +127,7 @@ local function iwe_command(opts)
 
   if subcmd == 'lsp' then
     if #args < 2 then
-      vim.notify("Usage: IWE lsp <start|stop|restart|status>", vim.log.levels.ERROR)
+      vim.notify("Usage: IWE lsp <start|stop|restart|status|toggle_inlay_hints>", vim.log.levels.ERROR)
       return
     end
     handle_lsp_command(args[2])
@@ -146,6 +148,7 @@ local function iwe_command(opts)
       string.format("  Command: %s", table.concat(config.lsp.cmd, " ")),
       string.format("  Name: %s", config.lsp.name),
       string.format("  Auto Format: %s", config.lsp.auto_format_on_save),
+      string.format("  Inlay Hints: %s", config.lsp.enable_inlay_hints),
       string.format("  Debounce: %dms", config.lsp.debounce_text_changes),
       "",
       "Mappings Configuration:",

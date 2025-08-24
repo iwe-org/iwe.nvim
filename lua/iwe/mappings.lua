@@ -174,6 +174,13 @@ function M.setup_plug_mappings()
     silent = true,
     desc = 'Go to next diagnostic'
   })
+
+  create_plug_mapping('lsp-toggle-inlay-hints', function()
+    require('iwe.lsp').toggle_inlay_hints()
+  end, 'n', {
+    silent = true,
+    desc = 'Toggle inlay hints'
+  })
 end
 
 ---Setup markdown keymaps (only if enabled in config)

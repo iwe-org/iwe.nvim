@@ -30,7 +30,8 @@ Add to your Neovim configuration (using lazy.nvim):
         cmd = { "iwes" },
         name = "iwes",
         debounce_text_changes = 500,
-        auto_format_on_save = true
+        auto_format_on_save = true,
+        enable_inlay_hints = true
       },
       mappings = {
         enable_markdown_mappings = true,
@@ -87,7 +88,7 @@ Open any `.md` file in your IWE project and enjoy:
 | Command | Description |
 |---------|-------------|
 | `:IWE init` | Initialize IWE project in current directory |
-| `:IWE lsp start/stop/restart/status` | Control LSP server |
+| `:IWE lsp start/stop/restart/status/toggle_inlay_hints` | Control LSP server |
 | `:IWE telescope find_files/paths/roots/grep/backlinks/headers` | Launch Telescope pickers |
 | `:IWE info` | Show plugin status and configuration |
 
@@ -111,6 +112,7 @@ require('iwe').setup({
   lsp = {
     cmd = { "iwes" },
     auto_format_on_save = true,
+    enable_inlay_hints = true,
     debounce_text_changes = 500
   },
   mappings = {
