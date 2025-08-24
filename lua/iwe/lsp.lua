@@ -13,7 +13,7 @@ end
 ---@param bufnr? number Buffer number (defaults to current buffer)
 function M.toggle_inlay_hints(bufnr)
   bufnr = bufnr or vim.api.nvim_get_current_buf()
-  
+
   if not vim.lsp.inlay_hint then
     vim.notify("Inlay hints not available in this Neovim version", vim.log.levels.WARN)
     return
@@ -21,7 +21,7 @@ function M.toggle_inlay_hints(bufnr)
 
   local enabled = vim.lsp.inlay_hint.is_enabled({ bufnr = bufnr })
   vim.lsp.inlay_hint.enable(not enabled, { bufnr = bufnr })
-  
+
   local status = enabled and "disabled" or "enabled"
   vim.notify(string.format("Inlay hints %s", status), vim.log.levels.INFO)
 end
