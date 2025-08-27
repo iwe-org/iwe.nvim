@@ -88,7 +88,7 @@ lsp.auto_format_on_save      Enable automatic formatting on save
 
 mappings.enable_markdown_mappings   Enable core markdown editing key mappings
 mappings.enable_telescope_keybindings Enable telescope keybindings (gf, gs, ga, etc.)
-mappings.enable_lsp_keybindings     Enable LSP keybindings (<leader>e, gd, gi, etc.)
+mappings.enable_lsp_keybindings     Enable IWE-specific LSP keybindings (<leader>e, <leader>i, etc.)
 mappings.leader                     Leader key for mappings
 mappings.localleader               Local leader key for mappings
 
@@ -141,19 +141,24 @@ Telescope keybindings (when enable_telescope_keybindings = true):
   `gr`              <Plug>(iwe-telescope-backlinks)
   `go`              <Plug>(iwe-telescope-headers)
 
-LSP keybindings (when enable_lsp_keybindings = true):
+IWE LSP keybindings (when enable_lsp_keybindings = true):
   `<leader>e`       <Plug>(iwe-lsp-extract-section)
   `<leader>i`       <Plug>(iwe-lsp-inline-reference)
   `<leader>h`       <Plug>(iwe-lsp-rewrite-list-section)
   `<leader>l`       <Plug>(iwe-lsp-rewrite-section-list)
-  `<leader>m`       <Plug>(iwe-lsp-code-action)
-  `<leader>c`       <Plug>(iwe-lsp-rename)
-  `gD`              <Plug>(iwe-lsp-declaration)
-  `gd`              <Plug>(iwe-lsp-definition)
-  `gi`              <Plug>(iwe-lsp-implementation)
-  `[d`              <Plug>(iwe-lsp-diagnostic-prev)
-  `]d`              <Plug>(iwe-lsp-diagnostic-next)
-  `<CR>`            <Plug>(iwe-lsp-definition)
+
+Default Neovim LSP keybindings (available when LSP is active):
+  `gD`              Go to declaration
+  `gd`              Go to definition  
+  `gi`              Go to implementation
+  `gr`              Show references
+  `K`               Show hover documentation
+  `<C-k>`           Show signature help (insert mode)
+  `[d`              Go to previous diagnostic
+  `]d`              Go to next diagnostic
+  `<leader>ca`      Show code actions
+  `<leader>rn`      Rename symbol
+  `<leader>f`       Format document
 
 Available <Plug> Mappings:~
 
@@ -173,13 +178,6 @@ Available <Plug> Mappings:~
 *<Plug>(iwe-lsp-inline-reference)* Inline reference (refactor)
 *<Plug>(iwe-lsp-rewrite-list-section)* Rewrite list section (refactor)
 *<Plug>(iwe-lsp-rewrite-section-list)* Rewrite section list (refactor)
-*<Plug>(iwe-lsp-code-action)*      Show code actions
-*<Plug>(iwe-lsp-declaration)*      Go to declaration
-*<Plug>(iwe-lsp-definition)*       Go to definition
-*<Plug>(iwe-lsp-implementation)*   Go to implementation
-*<Plug>(iwe-lsp-rename)*           Rename linked file
-*<Plug>(iwe-lsp-diagnostic-prev)*  Go to previous diagnostic
-*<Plug>(iwe-lsp-diagnostic-next)*  Go to next diagnostic
 
 ================================================================================
 FUNCTIONS                                                        *iwe-functions*

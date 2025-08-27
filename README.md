@@ -118,7 +118,7 @@ require('iwe').setup({
   mappings = {
     enable_markdown_mappings = true, -- Core markdown editing keybindings
     enable_telescope_keybindings = false, -- Set to true to enable gf, gs, ga, g/, gr, go
-    enable_lsp_keybindings = false, -- Set to true to enable LSP keybindings
+    enable_lsp_keybindings = false, -- Set to true to enable IWE-specific LSP keybindings
     leader = "<leader>",
     localleader = "<localleader>"
   },
@@ -157,9 +157,9 @@ In markdown files:
 | `gr` | LSP references (backlinks) | `:IWE telescope backlinks` |
 | `go` | Document symbols (headers) | `:IWE telescope headers` |
 
-### LSP Keybindings (when `enable_lsp_keybindings = true`)
+### IWE LSP Keybindings (when `enable_lsp_keybindings = true`)
 
-In markdown files:
+IWE-specific refactoring actions in markdown files:
 
 | Key | Action |
 |-----|--------|
@@ -167,14 +167,24 @@ In markdown files:
 | `<leader>i` | Inline reference (refactor) |
 | `<leader>h` | Rewrite list section (refactor) |
 | `<leader>l` | Rewrite section list (refactor) |
-| `<leader>m` | Show code actions |
-| `<leader>c` | Rename linked file |
+
+### Default Neovim LSP Keybindings
+
+Standard LSP actions are available when the LSP server is active:
+
+| Key | Action |
+|-----|--------|
 | `gD` | Go to declaration |
 | `gd` | Go to definition |
 | `gi` | Go to implementation |
+| `gr` | Show references |
+| `K` | Show hover documentation |
+| `<C-k>` | Show signature help (insert mode) |
 | `[d` | Go to previous diagnostic |
 | `]d` | Go to next diagnostic |
-| `<CR>` | Go to definition |
+| `<leader>ca` | Show code actions |
+| `<leader>rn` | Rename symbol |
+| `<leader>f` | Format document |
 
 ### Configuration Options
 
@@ -183,7 +193,7 @@ require('iwe').setup({
   mappings = {
     enable_markdown_mappings = true,        -- Enable markdown editing keybindings
     enable_telescope_keybindings = true,   -- Enable telescope navigation keybindings
-    enable_lsp_keybindings = true,         -- Enable LSP keybindings
+    enable_lsp_keybindings = true,         -- Enable IWE-specific LSP keybindings
   }
 })
 ```
@@ -199,19 +209,11 @@ vim.keymap.set('n', 'g/', '<Plug>(iwe-telescope-grep)')
 vim.keymap.set('n', 'gr', '<Plug>(iwe-telescope-backlinks)')
 vim.keymap.set('n', 'go', '<Plug>(iwe-telescope-headers)')
 
--- Default LSP keybindings (when enable_lsp_keybindings = true)
+-- IWE-specific LSP keybindings (when enable_lsp_keybindings = true)
 vim.keymap.set('n', '<leader>e', '<Plug>(iwe-lsp-extract-section)')
 vim.keymap.set('n', '<leader>i', '<Plug>(iwe-lsp-inline-reference)')
 vim.keymap.set('n', '<leader>h', '<Plug>(iwe-lsp-rewrite-list-section)')
 vim.keymap.set('n', '<leader>l', '<Plug>(iwe-lsp-rewrite-section-list)')
-vim.keymap.set('n', '<leader>m', '<Plug>(iwe-lsp-code-action)')
-vim.keymap.set('n', '<leader>c', '<Plug>(iwe-lsp-rename)')
-vim.keymap.set('n', 'gD', '<Plug>(iwe-lsp-declaration)')
-vim.keymap.set('n', 'gd', '<Plug>(iwe-lsp-definition)')
-vim.keymap.set('n', 'gi', '<Plug>(iwe-lsp-implementation)')
-vim.keymap.set('n', '[d', '<Plug>(iwe-lsp-diagnostic-prev)')
-vim.keymap.set('n', ']d', '<Plug>(iwe-lsp-diagnostic-next)')
-vim.keymap.set('n', '<CR>', '<Plug>(iwe-lsp-definition)')
 ```
 
 ## Requirements

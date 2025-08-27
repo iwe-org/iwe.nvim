@@ -14,7 +14,7 @@
 ---@class IWE.Config.Mappings
 ---@field enable_markdown_mappings boolean Whether to enable core markdown editing key mappings
 ---@field enable_telescope_keybindings boolean Whether to enable telescope keybindings (gf, gs, ga, etc.)
----@field enable_lsp_keybindings boolean Whether to enable LSP keybindings (gd, gr, <leader>e, etc.)
+---@field enable_lsp_keybindings boolean Whether to enable IWE-specific LSP keybindings (<leader>e, <leader>i, etc.)
 ---@field leader string Leader key for mappings
 ---@field localleader string Local leader key for mappings
 

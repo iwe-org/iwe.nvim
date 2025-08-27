@@ -126,55 +126,6 @@ function M.setup_plug_mappings()
     desc = 'Rewrite section list (refactor)'
   })
 
-  create_plug_mapping('lsp-code-action', function()
-    vim.lsp.buf.code_action()
-  end, 'n', {
-    silent = true,
-    desc = 'Show code actions'
-  })
-
-  create_plug_mapping('lsp-declaration', function()
-    vim.lsp.buf.declaration()
-  end, 'n', {
-    silent = true,
-    desc = 'Go to declaration'
-  })
-
-  create_plug_mapping('lsp-definition', function()
-    vim.lsp.buf.definition()
-  end, 'n', {
-    silent = true,
-    desc = 'Go to definition'
-  })
-
-  create_plug_mapping('lsp-implementation', function()
-    vim.lsp.buf.implementation()
-  end, 'n', {
-    silent = true,
-    desc = 'Go to implementation'
-  })
-
-  create_plug_mapping('lsp-rename', function()
-    vim.lsp.buf.rename()
-  end, 'n', {
-    silent = true,
-    desc = 'Rename linked file'
-  })
-
-  create_plug_mapping('lsp-diagnostic-prev', function()
-    vim.diagnostic.goto_prev()
-  end, 'n', {
-    silent = true,
-    desc = 'Go to previous diagnostic'
-  })
-
-  create_plug_mapping('lsp-diagnostic-next', function()
-    vim.diagnostic.goto_next()
-  end, 'n', {
-    silent = true,
-    desc = 'Go to next diagnostic'
-  })
-
   create_plug_mapping('lsp-toggle-inlay-hints', function()
     require('iwe.lsp').toggle_inlay_hints()
   end, 'n', {
@@ -217,20 +168,12 @@ function M.setup_markdown_mappings()
         vim.keymap.set('n', 'go', '<Plug>(iwe-telescope-headers)', { buffer = buf })
       end
 
-      -- LSP keybindings (if enabled)
+      -- IWE-specific LSP keybindings (if enabled)
       if config.get().mappings.enable_lsp_keybindings then
         vim.keymap.set('n', opts.mappings.leader .. 'e', '<Plug>(iwe-lsp-extract-section)', { buffer = buf })
         vim.keymap.set('n', opts.mappings.leader .. 'i', '<Plug>(iwe-lsp-inline-reference)', { buffer = buf })
         vim.keymap.set('n', opts.mappings.leader .. 'h', '<Plug>(iwe-lsp-rewrite-list-section)', { buffer = buf })
         vim.keymap.set('n', opts.mappings.leader .. 'l', '<Plug>(iwe-lsp-rewrite-section-list)', { buffer = buf })
-        vim.keymap.set('n', opts.mappings.leader .. 'm', '<Plug>(iwe-lsp-code-action)', { buffer = buf })
-        vim.keymap.set('n', opts.mappings.leader .. 'c', '<Plug>(iwe-lsp-rename)', { buffer = buf })
-        vim.keymap.set('n', 'gD', '<Plug>(iwe-lsp-declaration)', { buffer = buf })
-        vim.keymap.set('n', 'gd', '<Plug>(iwe-lsp-definition)', { buffer = buf })
-        vim.keymap.set('n', 'gi', '<Plug>(iwe-lsp-implementation)', { buffer = buf })
-        vim.keymap.set('n', '[d', '<Plug>(iwe-lsp-diagnostic-prev)', { buffer = buf })
-        vim.keymap.set('n', ']d', '<Plug>(iwe-lsp-diagnostic-next)', { buffer = buf })
-        vim.keymap.set('n', '<CR>', '<Plug>(iwe-lsp-definition)', { buffer = buf })
       end
     end,
     group = vim.api.nvim_create_augroup('IWE_MarkdownMappings', { clear = true }),
