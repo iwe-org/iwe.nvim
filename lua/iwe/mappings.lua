@@ -76,11 +76,18 @@ function M.setup_plug_mappings()
     desc = 'Namespace symbols - roots (ga equivalent)'
   })
 
+  create_plug_mapping('telescope-blockreferences', function()
+    require('iwe.telescope').pickers.blockreferences()
+  end, 'n', {
+    silent = true,
+    desc = 'LSP references - blockreferences (gr equivalent)'
+  })
+
   create_plug_mapping('telescope-backlinks', function()
     require('iwe.telescope').pickers.backlinks()
   end, 'n', {
     silent = true,
-    desc = 'LSP references - backlinks (gr equivalent)'
+    desc = 'LSP references - backlinks (gR equivalent)'
   })
 
   create_plug_mapping('telescope-headers', function()
@@ -193,7 +200,8 @@ function M.setup_markdown_mappings()
         vim.keymap.set('n', 'gs', '<Plug>(iwe-telescope-paths)', { buffer = buf })
         vim.keymap.set('n', 'ga', '<Plug>(iwe-telescope-roots)', { buffer = buf })
         vim.keymap.set('n', 'g/', '<Plug>(iwe-telescope-grep)', { buffer = buf })
-        vim.keymap.set('n', 'gr', '<Plug>(iwe-telescope-backlinks)', { buffer = buf })
+        vim.keymap.set('n', 'gr', '<Plug>(iwe-telescope-blockreferences)', { buffer = buf })
+        vim.keymap.set('n', 'gR', '<Plug>(iwe-telescope-backlinks)', { buffer = buf })
         vim.keymap.set('n', 'go', '<Plug>(iwe-telescope-headers)', { buffer = buf })
       end
 
