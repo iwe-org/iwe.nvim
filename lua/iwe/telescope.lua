@@ -203,7 +203,7 @@ function pickers.roots()
   })
 end
 
----LSP references - blockreferences (equivalent to gr)
+---LSP references - block references (equivalent to gr)
 function pickers.blockreferences()
   if not M.is_available() then
     vim.notify("Telescope not available", vim.log.levels.ERROR)
@@ -211,7 +211,7 @@ function pickers.blockreferences()
   end
 
   require('telescope.builtin').lsp_references({
-    prompt_title = "IWE Blockreferences",
+    prompt_title = "IWE Block references",
     layout_config = {
       horizontal = {
         prompt_position = "top",

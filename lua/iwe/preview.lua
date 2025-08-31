@@ -10,12 +10,12 @@ local function get_current_file_key()
   if bufname == '' then
     return nil
   end
-  
+
   local filename = vim.fn.fnamemodify(bufname, ':t:r')
   if filename == '' then
     return nil
   end
-  
+
   return filename
 end
 
@@ -27,12 +27,12 @@ local function check_dependencies()
   if vim.fn.executable('iwe') == 0 then
     return false, "iwe CLI not found in PATH. Please install IWE CLI."
   end
-  
+
   -- Check for neato (Graphviz)
   if vim.fn.executable('neato') == 0 then
     return false, "neato not found in PATH. Please install Graphviz."
   end
-  
+
   return true, nil
 end
 
@@ -55,7 +55,7 @@ local function execute_async(cmd, output_file, on_success, on_error)
     on_error(error_msg)
     return
   end
-  
+
   vim.system(cmd, {
     stdout = output_file and vim.uv.fs_open(output_file, 'w', 420) or nil,
     stderr = true,
@@ -79,19 +79,18 @@ function M.generate_squash_preview(file_key)
     vim.notify("No file key available. Save the current buffer or provide a key.", vim.log.levels.ERROR)
     return
   end
-  
+
   local preview_config = config.get().preview
   local output_dir = preview_config.output_dir
-  local temp_dir = preview_config.temp_dir
-  
+
   if not ensure_output_dir(output_dir) then
     vim.notify("Failed to create output directory: " .. output_dir, vim.log.levels.ERROR)
     return
   end
-  
+
   local output_file = output_dir .. "/" .. key .. "-preview.md"
   local cmd = { 'iwe', 'squash', '-d', '3', '--key', key }
-  
+
   execute_async(cmd, output_file, function(file)
     vim.notify("Squash preview generated: " .. file)
     if preview_config.auto_open then
@@ -110,20 +109,20 @@ function M.generate_export_preview(file_key)
     vim.notify("No file key available. Save the current buffer or provide a key.", vim.log.levels.ERROR)
     return
   end
-  
+
   local preview_config = config.get().preview
   local output_dir = preview_config.output_dir
-  
+
   if not ensure_output_dir(output_dir) then
     vim.notify("Failed to create output directory: " .. output_dir, vim.log.levels.ERROR)
     return
   end
-  
+
   local output_file = output_dir .. "/" .. key .. "-graph.svg"
-  local cmd = { 'sh', '-c', 
-    string.format('iwe export dot --key %s -d 2 | neato -Tsvg -o %s', 
+  local cmd = { 'sh', '-c',
+    string.format('iwe export dot --key %s -d 2 | neato -Tsvg -o %s',
       vim.fn.shellescape(key), vim.fn.shellescape(output_file)) }
-  
+
   execute_async(cmd, nil, function()
     vim.notify("Export preview generated: " .. output_file)
     if preview_config.auto_open then
@@ -143,20 +142,20 @@ function M.generate_export_headers_preview(file_key)
     vim.notify("No file key available. Save the current buffer or provide a key.", vim.log.levels.ERROR)
     return
   end
-  
+
   local preview_config = config.get().preview
   local output_dir = preview_config.output_dir
-  
+
   if not ensure_output_dir(output_dir) then
     vim.notify("Failed to create output directory: " .. output_dir, vim.log.levels.ERROR)
     return
   end
-  
+
   local output_file = output_dir .. "/" .. key .. "-headers.svg"
-  local cmd = { 'sh', '-c', 
-    string.format('iwe export dot --key %s -d 2 --include-headers | neato -Tsvg -o %s', 
+  local cmd = { 'sh', '-c',
+    string.format('iwe export dot --key %s -d 2 --include-headers | neato -Tsvg -o %s',
       vim.fn.shellescape(key), vim.fn.shellescape(output_file)) }
-  
+
   execute_async(cmd, nil, function()
     vim.notify("Export headers preview generated: " .. output_file)
     if preview_config.auto_open then
@@ -172,17 +171,17 @@ end
 function M.generate_export_workspace_preview()
   local preview_config = config.get().preview
   local output_dir = preview_config.output_dir
-  
+
   if not ensure_output_dir(output_dir) then
     vim.notify("Failed to create output directory: " .. output_dir, vim.log.levels.ERROR)
     return
   end
-  
+
   local output_file = output_dir .. "/workspace.svg"
-  local cmd = { 'sh', '-c', 
-    string.format('iwe export dot -d 1 | neato -Tsvg -o %s', 
+  local cmd = { 'sh', '-c',
+    string.format('iwe export dot -d 1 | neato -Tsvg -o %s',
       vim.fn.shellescape(output_file)) }
-  
+
   execute_async(cmd, nil, function()
     vim.notify("Workspace preview generated: " .. output_file)
     if preview_config.auto_open then
@@ -210,10 +209,10 @@ function M.get_status()
     output_dir = config.get().preview.output_dir,
     current_file_key = get_current_file_key()
   }
-  
+
   status.output_dir_writable = ensure_output_dir(status.output_dir)
   status.ready = status.iwe_available and status.neato_available and status.output_dir_writable
-  
+
   return status
 end
 
