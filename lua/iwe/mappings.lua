@@ -76,11 +76,18 @@ function M.setup_plug_mappings()
     desc = 'Namespace symbols - roots (ga equivalent)'
   })
 
+  create_plug_mapping('telescope-blockreferences', function()
+    require('iwe.telescope').pickers.blockreferences()
+  end, 'n', {
+    silent = true,
+    desc = 'LSP references - blockreferences (gr equivalent)'
+  })
+
   create_plug_mapping('telescope-backlinks', function()
     require('iwe.telescope').pickers.backlinks()
   end, 'n', {
     silent = true,
-    desc = 'LSP references - backlinks (gr equivalent)'
+    desc = 'LSP references - backlinks (gR equivalent)'
   })
 
   create_plug_mapping('telescope-headers', function()
@@ -95,6 +102,35 @@ function M.setup_plug_mappings()
   end, 'n', {
     silent = true,
     desc = 'Live grep search (g/ equivalent)'
+  })
+
+  -- Preview mappings
+  create_plug_mapping('preview-squash', function()
+    require('iwe.preview').generate_squash_preview()
+  end, 'n', {
+    silent = true,
+    desc = 'Generate squash markdown preview'
+  })
+
+  create_plug_mapping('preview-export', function()
+    require('iwe.preview').generate_export_preview()
+  end, 'n', {
+    silent = true,
+    desc = 'Generate export graph preview'
+  })
+
+  create_plug_mapping('preview-export-headers', function()
+    require('iwe.preview').generate_export_headers_preview()
+  end, 'n', {
+    silent = true,
+    desc = 'Generate export graph with headers preview'
+  })
+
+  create_plug_mapping('preview-export-workspace', function()
+    require('iwe.preview').generate_export_workspace_preview()
+  end, 'n', {
+    silent = true,
+    desc = 'Generate workspace graph preview'
   })
 
   -- LSP action mappings
@@ -164,7 +200,8 @@ function M.setup_markdown_mappings()
         vim.keymap.set('n', 'gs', '<Plug>(iwe-telescope-paths)', { buffer = buf })
         vim.keymap.set('n', 'ga', '<Plug>(iwe-telescope-roots)', { buffer = buf })
         vim.keymap.set('n', 'g/', '<Plug>(iwe-telescope-grep)', { buffer = buf })
-        vim.keymap.set('n', 'gr', '<Plug>(iwe-telescope-backlinks)', { buffer = buf })
+        vim.keymap.set('n', 'gr', '<Plug>(iwe-telescope-blockreferences)', { buffer = buf })
+        vim.keymap.set('n', 'gR', '<Plug>(iwe-telescope-backlinks)', { buffer = buf })
         vim.keymap.set('n', 'go', '<Plug>(iwe-telescope-headers)', { buffer = buf })
       end
 
@@ -174,6 +211,14 @@ function M.setup_markdown_mappings()
         vim.keymap.set('n', opts.mappings.leader .. 'i', '<Plug>(iwe-lsp-inline-reference)', { buffer = buf })
         vim.keymap.set('n', opts.mappings.leader .. 'h', '<Plug>(iwe-lsp-rewrite-list-section)', { buffer = buf })
         vim.keymap.set('n', opts.mappings.leader .. 'l', '<Plug>(iwe-lsp-rewrite-section-list)', { buffer = buf })
+      end
+
+      -- Preview keybindings (if enabled)
+      if config.get().mappings.enable_preview_keybindings then
+        vim.keymap.set('n', opts.mappings.leader .. 'ps', '<Plug>(iwe-preview-squash)', { buffer = buf })
+        vim.keymap.set('n', opts.mappings.leader .. 'pe', '<Plug>(iwe-preview-export)', { buffer = buf })
+        vim.keymap.set('n', opts.mappings.leader .. 'ph', '<Plug>(iwe-preview-export-headers)', { buffer = buf })
+        vim.keymap.set('n', opts.mappings.leader .. 'pw', '<Plug>(iwe-preview-export-workspace)', { buffer = buf })
       end
     end,
     group = vim.api.nvim_create_augroup('IWE_MarkdownMappings', { clear = true }),

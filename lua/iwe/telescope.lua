@@ -203,7 +203,28 @@ function pickers.roots()
   })
 end
 
----LSP references - backlinks (equivalent to gr)
+---LSP references - block references (equivalent to gr)
+function pickers.blockreferences()
+  if not M.is_available() then
+    vim.notify("Telescope not available", vim.log.levels.ERROR)
+    return
+  end
+
+  require('telescope.builtin').lsp_references({
+    prompt_title = "IWE Block references",
+    layout_config = {
+      horizontal = {
+        prompt_position = "top",
+        preview_width = 0.7,
+        width = 0.9,
+        height = 0.9,
+      },
+    },
+    include_declaration = false,
+  })
+end
+
+---LSP references - backlinks (equivalent to gR)
 function pickers.backlinks()
   if not M.is_available() then
     vim.notify("Telescope not available", vim.log.levels.ERROR)
@@ -220,6 +241,7 @@ function pickers.backlinks()
         height = 0.9,
       },
     },
+    include_declaration = true,
   })
 end
 

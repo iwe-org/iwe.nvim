@@ -108,8 +108,11 @@ COMMANDS                                                          *iwe-commands*
                         Actions: start, stop, restart, status
 
     telescope {action} Control Telescope pickers
-                        Actions: find_files, paths, roots, grep, backlinks,
-                        headers, setup
+                        Actions: find_files, paths, roots, grep, blockreferences,
+                        backlinks, headers, setup
+
+    preview {action}   Generate previews using IWE CLI
+                        Actions: squash, export, export-headers, export-workspace
 
     info               Show plugin configuration and status
 
@@ -138,7 +141,8 @@ Telescope keybindings (when enable_telescope_keybindings = true):
   `gs`              <Plug>(iwe-telescope-paths)
   `ga`              <Plug>(iwe-telescope-roots)
   `g/`              <Plug>(iwe-telescope-grep)
-  `gr`              <Plug>(iwe-telescope-backlinks)
+  `gr`              <Plug>(iwe-telescope-blockreferences)
+  `gR`              <Plug>(iwe-telescope-backlinks)
   `go`              <Plug>(iwe-telescope-headers)
 
 IWE LSP keybindings (when enable_lsp_keybindings = true):
@@ -146,6 +150,12 @@ IWE LSP keybindings (when enable_lsp_keybindings = true):
   `<leader>i`       <Plug>(iwe-lsp-inline-reference)
   `<leader>h`       <Plug>(iwe-lsp-rewrite-list-section)
   `<leader>l`       <Plug>(iwe-lsp-rewrite-section-list)
+
+Preview keybindings (when enable_preview_keybindings = true):
+  `<leader>ps`      <Plug>(iwe-preview-squash)
+  `<leader>pe`      <Plug>(iwe-preview-export)
+  `<leader>ph`      <Plug>(iwe-preview-export-headers)
+  `<leader>pw`      <Plug>(iwe-preview-export-workspace)
 
 Default Neovim LSP keybindings (available when LSP is active):
   `gD`              Go to declaration
@@ -172,12 +182,17 @@ Available <Plug> Mappings:~
 *<Plug>(iwe-telescope-paths)*      Workspace symbols - paths (gs equivalent)
 *<Plug>(iwe-telescope-roots)*      Namespace symbols - roots (ga equivalent)
 *<Plug>(iwe-telescope-grep)*       Live grep search (g/ equivalent)
-*<Plug>(iwe-telescope-backlinks)*  LSP references - backlinks (gr equivalent)
+*<Plug>(iwe-telescope-blockreferences)* LSP references - blockreferences (gr equivalent)
+*<Plug>(iwe-telescope-backlinks)*  LSP references - backlinks (gR equivalent)
 *<Plug>(iwe-telescope-headers)*    Document symbols - headers (go equivalent)
 *<Plug>(iwe-lsp-extract-section)*  Extract section (refactor)
 *<Plug>(iwe-lsp-inline-reference)* Inline reference (refactor)
 *<Plug>(iwe-lsp-rewrite-list-section)* Rewrite list section (refactor)
 *<Plug>(iwe-lsp-rewrite-section-list)* Rewrite section list (refactor)
+*<Plug>(iwe-preview-squash)*       Generate squash markdown preview
+*<Plug>(iwe-preview-export)*       Generate export graph preview
+*<Plug>(iwe-preview-export-headers)* Generate export graph with headers preview
+*<Plug>(iwe-preview-export-workspace)* Generate workspace graph preview
 
 ================================================================================
 FUNCTIONS                                                        *iwe-functions*
@@ -212,11 +227,26 @@ require('iwe.telescope').pickers.roots()             *iwe.telescope.roots*
 require('iwe.telescope').pickers.grep()              *iwe.telescope.grep*
     Launch live grep picker (g/ equivalent).
 
+require('iwe.telescope').pickers.blockreferences()    *iwe.telescope.blockreferences*
+    Launch LSP references picker - blockreferences (gr equivalent).
+
 require('iwe.telescope').pickers.backlinks()         *iwe.telescope.backlinks*
-    Launch LSP references picker - backlinks (gr equivalent).
+    Launch LSP references picker - backlinks (gR equivalent).
 
 require('iwe.telescope').pickers.headers()           *iwe.telescope.headers*
     Launch document symbols picker - headers (go equivalent).
+
+require('iwe.preview').generate_squash_preview()      *iwe.preview.squash*
+    Generate squashed markdown preview using iwe CLI.
+
+require('iwe.preview').generate_export_preview()      *iwe.preview.export*
+    Generate basic DOT graph as SVG using iwe CLI.
+
+require('iwe.preview').generate_export_headers_preview() *iwe.preview.export-headers*
+    Generate DOT graph with headers as SVG using iwe CLI.
+
+require('iwe.preview').generate_export_workspace_preview() *iwe.preview.export-workspace*
+    Generate full workspace graph as SVG using iwe CLI.
 
 
 ================================================================================
@@ -233,6 +263,7 @@ The health check verifies:
 • Configuration path validity
 • Telescope availability and extensions
 • Optional dependencies
+• Preview functionality (iwe CLI and Graphviz)
 • Current LSP server status
 
 ================================================================================

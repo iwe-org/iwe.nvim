@@ -3,6 +3,7 @@ local M = {}
 
 local lsp = require('iwe.lsp')
 local telescope = require('iwe.telescope')
+local preview = require('iwe.preview')
 
 
 ---Get completion for LSP commands
@@ -15,6 +16,12 @@ end
 ---@return string[]
 local function complete_telescope_commands()
   return { 'find_files', 'paths', 'roots', 'grep', 'backlinks', 'headers', 'setup' }
+end
+
+---Get completion for Preview commands
+---@return string[]
+local function complete_preview_commands()
+  return { 'squash', 'export', 'export-headers', 'export-workspace' }
 end
 
 ---Initialize IWE project in current directory
@@ -112,6 +119,27 @@ local function handle_telescope_command(subcmd)
   end
 end
 
+---Handle Preview subcommands
+---@param subcmd string The subcommand (squash, export, export-headers, export-workspace)
+local function handle_preview_command(subcmd)
+  if not preview.is_available() then
+    vim.notify("Preview not available - please install iwe CLI and neato (Graphviz)", vim.log.levels.ERROR)
+    return
+  end
+
+  if subcmd == 'squash' then
+    preview.generate_squash_preview()
+  elseif subcmd == 'export' then
+    preview.generate_export_preview()
+  elseif subcmd == 'export-headers' then
+    preview.generate_export_headers_preview()
+  elseif subcmd == 'export-workspace' then
+    preview.generate_export_workspace_preview()
+  else
+    vim.notify(string.format("Unknown Preview command: %s", subcmd), vim.log.levels.ERROR)
+  end
+end
+
 ---Main IWE command handler
 ---@param opts table Command options from nvim_create_user_command
 local function iwe_command(opts)
@@ -137,6 +165,12 @@ local function iwe_command(opts)
       return
     end
     handle_telescope_command(args[2])
+  elseif subcmd == 'preview' or subcmd == 'prev' then
+    if #args < 2 then
+      vim.notify("Usage: IWE preview <squash|export|export-headers|export-workspace>", vim.log.levels.ERROR)
+      return
+    end
+    handle_preview_command(args[2])
   elseif subcmd == 'init' then
     init_iwe_project()
   elseif subcmd == 'info' then
@@ -163,6 +197,10 @@ local function iwe_command(opts)
       string.format("  Setup Config: %s", config.telescope.setup_config),
       string.format("  Extensions: %s", table.concat(config.telescope.load_extensions, ", ")),
       "",
+      "Preview Configuration:",
+      string.format("  Output Dir: %s", config.preview.output_dir),
+      string.format("  Auto Open: %s", config.preview.auto_open),
+      "",
       "Status:",
       string.format("  LSP Available: %s", lsp.is_available() and "Yes" or "No")
     }
@@ -170,6 +208,7 @@ local function iwe_command(opts)
     local clients = vim.lsp.get_clients({ name = 'iwes' })
     table.insert(lines, string.format("  LSP Running: %s", #clients > 0 and "Yes" or "No"))
     table.insert(lines, string.format("  Telescope Available: %s", telescope.is_available() and "Yes" or "No"))
+    table.insert(lines, string.format("  Preview Available: %s", preview.is_available() and "Yes" or "No"))
 
     -- Check for .iwe marker in current directory
     local iwe_root = vim.fs.root(0, {'.iwe'})
@@ -181,7 +220,7 @@ local function iwe_command(opts)
     end
   else
     vim.notify(string.format("Unknown IWE command: %s", subcmd), vim.log.levels.ERROR)
-    vim.notify("Available commands: lsp, telescope, init, info", vim.log.levels.INFO)
+    vim.notify("Available commands: lsp, telescope, preview, init, info", vim.log.levels.INFO)
   end
 end
 
@@ -196,7 +235,7 @@ local function complete_iwe_command(arg_lead, cmd_line, _)
 
   -- If we're completing the first argument after IWE
   if arg_count == 1 then
-    local subcommands = { 'lsp', 'telescope', 'tel', 'init', 'info' }
+    local subcommands = { 'lsp', 'telescope', 'tel', 'preview', 'prev', 'init', 'info' }
     return vim.tbl_filter(function(cmd)
       return cmd:find('^' .. vim.pesc(arg_lead))
     end, subcommands)
@@ -209,6 +248,8 @@ local function complete_iwe_command(arg_lead, cmd_line, _)
       return complete_lsp_commands()
     elseif subcmd == 'telescope' or subcmd == 'tel' then
       return complete_telescope_commands()
+    elseif subcmd == 'preview' or subcmd == 'prev' then
+      return complete_preview_commands()
     end
   end
 
