@@ -27,7 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Workspace Symbols**: Path-based symbol search (`gs` equivalent)
 - **Namespace Symbols**: Root-based symbol search (`ga` equivalent)
 - **Live Grep**: Search across project files (`g/` equivalent)
-- **LSP References**: Backlink navigation (`gr` equivalent)
+- **LSP References**: Backlink navigation (`gb` equivalent)
 - **Document Symbols**: Header navigation (`go` equivalent)
 
 #### Key Mappings

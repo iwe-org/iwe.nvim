@@ -203,7 +203,7 @@ function pickers.roots()
   })
 end
 
----LSP references - block references (equivalent to gr)
+---LSP references - block references (equivalent to gb)
 function pickers.blockreferences()
   if not M.is_available() then
     vim.notify("Telescope not available", vim.log.levels.ERROR)

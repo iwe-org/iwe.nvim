@@ -141,7 +141,7 @@ Telescope keybindings (when enable_telescope_keybindings = true):
   `gs`              <Plug>(iwe-telescope-paths)
   `ga`              <Plug>(iwe-telescope-roots)
   `g/`              <Plug>(iwe-telescope-grep)
-  `gr`              <Plug>(iwe-telescope-blockreferences)
+  `gb`              <Plug>(iwe-telescope-blockreferences)
   `gR`              <Plug>(iwe-telescope-backlinks)
   `go`              <Plug>(iwe-telescope-headers)
 
@@ -182,7 +182,7 @@ Available <Plug> Mappings:~
 *<Plug>(iwe-telescope-paths)*      Workspace symbols - paths (gs equivalent)
 *<Plug>(iwe-telescope-roots)*      Namespace symbols - roots (ga equivalent)
 *<Plug>(iwe-telescope-grep)*       Live grep search (g/ equivalent)
-*<Plug>(iwe-telescope-blockreferences)* LSP references - blockreferences (gr equivalent)
+*<Plug>(iwe-telescope-blockreferences)* LSP references - blockreferences (gb equivalent)
 *<Plug>(iwe-telescope-backlinks)*  LSP references - backlinks (gR equivalent)
 *<Plug>(iwe-telescope-headers)*    Document symbols - headers (go equivalent)
 *<Plug>(iwe-lsp-extract-section)*  Extract section (refactor)
@@ -228,7 +228,7 @@ require('iwe.telescope').pickers.grep()              *iwe.telescope.grep*
     Launch live grep picker (g/ equivalent).
 
 require('iwe.telescope').pickers.blockreferences()    *iwe.telescope.blockreferences*
-    Launch LSP references picker - blockreferences (gr equivalent).
+    Launch LSP references picker - blockreferences (gb equivalent).
 
 require('iwe.telescope').pickers.backlinks()         *iwe.telescope.backlinks*
     Launch LSP references picker - backlinks (gR equivalent).

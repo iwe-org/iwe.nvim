@@ -101,7 +101,7 @@ The plugin provides LSP-powered Telescope pickers:
 - **`:IWE telescope paths`** - Workspace symbols as paths (gs equivalent)
 - **`:IWE telescope roots`** - Namespace symbols as roots (ga equivalent)
 - **`:IWE telescope grep`** - Live grep search (g/ equivalent)
-- **`:IWE telescope backlinks`** - LSP references as backlinks (gr equivalent)
+- **`:IWE telescope backlinks`** - LSP references as backlinks (gb equivalent)
 - **`:IWE telescope headers`** - Document symbols as headers (go equivalent)
 
 ## Preview Integration
@@ -127,7 +127,7 @@ require('iwe').setup({
   },
   mappings = {
     enable_markdown_mappings = true, -- Core markdown editing keybindings
-    enable_telescope_keybindings = false, -- Set to true to enable gf, gs, ga, g/, gr, go
+    enable_telescope_keybindings = false, -- Set to true to enable gf, gs, ga, g/, gb, go
     enable_lsp_keybindings = false, -- Set to true to enable IWE-specific LSP keybindings
     enable_preview_keybindings = false, -- Set to true to enable preview keybindings
     leader = "<leader>",
@@ -170,7 +170,7 @@ In markdown files:
 | `gs` | Workspace symbols (paths) | `:IWE telescope paths` |
 | `ga` | Namespace symbols (roots) | `:IWE telescope roots` |
 | `g/` | Live grep search | `:IWE telescope grep` |
-| `gr` | LSP references (backlinks) | `:IWE telescope backlinks` |
+| `gb` | LSP references (backlinks) | `:IWE telescope backlinks` |
 | `go` | Document symbols (headers) | `:IWE telescope headers` |
 
 ### IWE LSP Keybindings (when `enable_lsp_keybindings = true`)
@@ -234,7 +234,7 @@ vim.keymap.set('n', 'gf', '<Plug>(iwe-telescope-find-files)')
 vim.keymap.set('n', 'gs', '<Plug>(iwe-telescope-paths)')
 vim.keymap.set('n', 'ga', '<Plug>(iwe-telescope-roots)')
 vim.keymap.set('n', 'g/', '<Plug>(iwe-telescope-grep)')
-vim.keymap.set('n', 'gr', '<Plug>(iwe-telescope-backlinks)')
+vim.keymap.set('n', 'gb', '<Plug>(iwe-telescope-backlinks)')
 vim.keymap.set('n', 'go', '<Plug>(iwe-telescope-headers)')
 
 -- IWE-specific LSP keybindings (when enable_lsp_keybindings = true)

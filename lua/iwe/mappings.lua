@@ -80,7 +80,7 @@ function M.setup_plug_mappings()
     require('iwe.telescope').pickers.blockreferences()
   end, 'n', {
     silent = true,
-    desc = 'LSP references - blockreferences (gr equivalent)'
+    desc = 'LSP references - blockreferences (gb equivalent)'
   })
 
   create_plug_mapping('telescope-backlinks', function()
@@ -200,7 +200,7 @@ function M.setup_markdown_mappings()
         vim.keymap.set('n', 'gs', '<Plug>(iwe-telescope-paths)', { buffer = buf })
         vim.keymap.set('n', 'ga', '<Plug>(iwe-telescope-roots)', { buffer = buf })
         vim.keymap.set('n', 'g/', '<Plug>(iwe-telescope-grep)', { buffer = buf })
-        vim.keymap.set('n', 'gr', '<Plug>(iwe-telescope-blockreferences)', { buffer = buf })
+        vim.keymap.set('n', 'gb', '<Plug>(iwe-telescope-blockreferences)', { buffer = buf })
         vim.keymap.set('n', 'gR', '<Plug>(iwe-telescope-backlinks)', { buffer = buf })
         vim.keymap.set('n', 'go', '<Plug>(iwe-telescope-headers)', { buffer = buf })
       end
