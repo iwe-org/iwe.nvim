@@ -77,6 +77,7 @@ local function check_configuration()
   health.info(string.format('Markdown mappings enabled: %s', config.mappings.enable_markdown_mappings))
   health.info(string.format('Telescope keybindings enabled: %s', config.mappings.enable_telescope_keybindings))
   health.info(string.format('LSP keybindings enabled: %s', config.mappings.enable_lsp_keybindings))
+  health.info(string.format('Preview keybindings enabled: %s', config.mappings.enable_preview_keybindings))
   health.info(string.format('Leader key: %s', config.mappings.leader))
   health.info(string.format('Local leader key: %s', config.mappings.localleader))
 
@@ -84,6 +85,11 @@ local function check_configuration()
   health.info(string.format('Telescope enabled: %s', config.telescope.enabled))
   health.info(string.format('Telescope setup config: %s', config.telescope.setup_config))
   health.info(string.format('Telescope extensions: %s', table.concat(config.telescope.load_extensions, ', ')))
+
+  -- Check preview configuration
+  health.info(string.format('Preview output dir: %s', config.preview.output_dir))
+  health.info(string.format('Preview temp dir: %s', config.preview.temp_dir))
+  health.info(string.format('Preview auto open: %s', config.preview.auto_open))
 end
 
 ---Check dependencies
@@ -133,6 +139,80 @@ local function check_dependencies()
   end
 end
 
+---Check preview functionality
+local function check_preview()
+  health.start('Preview Dependencies')
+
+  -- Check for iwe CLI
+  if vim.fn.executable('iwe') == 1 then
+    health.ok('iwe CLI found in PATH')
+
+    local iwe_path = vim.fn.exepath('iwe')
+    if iwe_path and iwe_path ~= '' then
+      health.info(string.format('iwe CLI location: %s', iwe_path))
+    end
+  else
+    health.error('iwe CLI not found in PATH', {
+      'Install the IWE CLI from https://github.com/iwe-org/iwe',
+      'Make sure iwe is in your PATH',
+      'Preview functionality requires the iwe CLI'
+    })
+  end
+
+  -- Check for neato (Graphviz)
+  if vim.fn.executable('neato') == 1 then
+    health.ok('neato (Graphviz) found in PATH')
+
+    local neato_path = vim.fn.exepath('neato')
+    if neato_path and neato_path ~= '' then
+      health.info(string.format('neato location: %s', neato_path))
+    end
+  else
+    health.error('neato (Graphviz) not found in PATH', {
+      'Install Graphviz package for your system',
+      'macOS: brew install graphviz',
+      'Ubuntu/Debian: sudo apt install graphviz',
+      'Preview SVG generation requires neato'
+    })
+  end
+
+  -- Check preview output directory
+  local config = require('iwe.config').get()
+  local output_dir = config.preview.output_dir
+
+  if vim.fn.isdirectory(output_dir) == 1 then
+    health.ok(string.format('Preview output directory exists: %s', output_dir))
+  else
+    -- Check if parent directory is writable for creation
+    local parent_dir = vim.fn.fnamemodify(output_dir, ':h')
+    if vim.fn.isdirectory(parent_dir) == 1 and vim.fn.filewritable(parent_dir) == 2 then
+      health.ok(string.format('Preview output directory can be created: %s', output_dir))
+    else
+      health.warn(string.format('Cannot create preview output directory: %s', output_dir), {
+        'Check that parent directory exists and is writable',
+        'Update preview.output_dir configuration if needed'
+      })
+    end
+  end
+
+  -- Test preview functionality if available
+  local preview = require('iwe.preview')
+  if preview.is_available() then
+    health.ok('Preview functionality available')
+
+    local status = preview.get_status()
+    if status.current_file_key then
+      health.info(string.format('Current file key: %s', status.current_file_key))
+    else
+      health.info('No current file key (save current buffer to enable file-specific previews)')
+    end
+  else
+    health.warn('Preview functionality not available', {
+      'Ensure both iwe CLI and neato are installed and in PATH'
+    })
+  end
+end
+
 ---Check current LSP status
 local function check_lsp_status()
   health.start('LSP Status')
@@ -160,6 +240,7 @@ function M.check()
   check_project_structure()
   check_configuration()
   check_dependencies()
+  check_preview()
   check_lsp_status()
 end
 

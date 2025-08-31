@@ -97,6 +97,35 @@ function M.setup_plug_mappings()
     desc = 'Live grep search (g/ equivalent)'
   })
 
+  -- Preview mappings
+  create_plug_mapping('preview-squash', function()
+    require('iwe.preview').generate_squash_preview()
+  end, 'n', {
+    silent = true,
+    desc = 'Generate squash markdown preview'
+  })
+
+  create_plug_mapping('preview-export', function()
+    require('iwe.preview').generate_export_preview()
+  end, 'n', {
+    silent = true,
+    desc = 'Generate export graph preview'
+  })
+
+  create_plug_mapping('preview-export-headers', function()
+    require('iwe.preview').generate_export_headers_preview()
+  end, 'n', {
+    silent = true,
+    desc = 'Generate export graph with headers preview'
+  })
+
+  create_plug_mapping('preview-export-workspace', function()
+    require('iwe.preview').generate_export_workspace_preview()
+  end, 'n', {
+    silent = true,
+    desc = 'Generate workspace graph preview'
+  })
+
   -- LSP action mappings
   create_plug_mapping('lsp-extract-section', function()
     vim.lsp.buf.code_action({apply = true, context = { only = {"refactor.extract.section"}}})
@@ -174,6 +203,14 @@ function M.setup_markdown_mappings()
         vim.keymap.set('n', opts.mappings.leader .. 'i', '<Plug>(iwe-lsp-inline-reference)', { buffer = buf })
         vim.keymap.set('n', opts.mappings.leader .. 'h', '<Plug>(iwe-lsp-rewrite-list-section)', { buffer = buf })
         vim.keymap.set('n', opts.mappings.leader .. 'l', '<Plug>(iwe-lsp-rewrite-section-list)', { buffer = buf })
+      end
+
+      -- Preview keybindings (if enabled)
+      if config.get().mappings.enable_preview_keybindings then
+        vim.keymap.set('n', opts.mappings.leader .. 'ps', '<Plug>(iwe-preview-squash)', { buffer = buf })
+        vim.keymap.set('n', opts.mappings.leader .. 'pe', '<Plug>(iwe-preview-export)', { buffer = buf })
+        vim.keymap.set('n', opts.mappings.leader .. 'ph', '<Plug>(iwe-preview-export-headers)', { buffer = buf })
+        vim.keymap.set('n', opts.mappings.leader .. 'pw', '<Plug>(iwe-preview-export-workspace)', { buffer = buf })
       end
     end,
     group = vim.api.nvim_create_augroup('IWE_MarkdownMappings', { clear = true }),

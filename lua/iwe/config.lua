@@ -2,6 +2,7 @@
 ---@field lsp IWE.Config.LSP LSP server configuration
 ---@field mappings IWE.Config.Mappings Key mapping configuration
 ---@field telescope IWE.Config.Telescope Telescope integration configuration
+---@field preview IWE.Config.Preview Preview generation configuration
 
 
 ---@class IWE.Config.LSP
@@ -15,6 +16,7 @@
 ---@field enable_markdown_mappings boolean Whether to enable core markdown editing key mappings
 ---@field enable_telescope_keybindings boolean Whether to enable telescope keybindings (gf, gs, ga, etc.)
 ---@field enable_lsp_keybindings boolean Whether to enable IWE-specific LSP keybindings (<leader>e, <leader>i, etc.)
+---@field enable_preview_keybindings boolean Whether to enable preview keybindings (<leader>ps, <leader>pe, etc.)
 ---@field leader string Leader key for mappings
 ---@field localleader string Local leader key for mappings
 
@@ -22,6 +24,11 @@
 ---@field enabled boolean Whether to enable Telescope integration
 ---@field setup_config boolean Whether to setup Telescope config automatically
 ---@field load_extensions string[] Extensions to load automatically
+
+---@class IWE.Config.Preview
+---@field output_dir string Directory for generated preview files
+---@field temp_dir string Directory for temporary files during preview generation
+---@field auto_open boolean Whether to automatically open generated previews
 
 local M = {}
 
@@ -38,6 +45,7 @@ M.defaults = {
     enable_markdown_mappings = true,
     enable_telescope_keybindings = false,
     enable_lsp_keybindings = false,
+    enable_preview_keybindings = false,
     leader = "<leader>",
     localleader = "<localleader>"
   },
@@ -45,6 +53,11 @@ M.defaults = {
     enabled = true,
     setup_config = true,
     load_extensions = { "ui-select", "emoji" }
+  },
+  preview = {
+    output_dir = vim.fn.expand("~/tmp/preview"),
+    temp_dir = vim.fn.expand("/tmp"),
+    auto_open = false
   }
 }
 
@@ -77,6 +90,18 @@ local function validate_config(opts)
     end
     if opts.telescope.load_extensions and type(opts.telescope.load_extensions) ~= "table" then
       return false, "telescope.load_extensions must be an array"
+    end
+  end
+
+  if opts.preview then
+    if opts.preview.output_dir and type(opts.preview.output_dir) ~= "string" then
+      return false, "preview.output_dir must be a string"
+    end
+    if opts.preview.temp_dir and type(opts.preview.temp_dir) ~= "string" then
+      return false, "preview.temp_dir must be a string"
+    end
+    if opts.preview.auto_open ~= nil and type(opts.preview.auto_open) ~= "boolean" then
+      return false, "preview.auto_open must be a boolean"
     end
   end
 

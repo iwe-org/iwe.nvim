@@ -111,6 +111,9 @@ COMMANDS                                                          *iwe-commands*
                         Actions: find_files, paths, roots, grep, backlinks,
                         headers, setup
 
+    preview {action}   Generate previews using IWE CLI
+                        Actions: squash, export, export-headers, export-workspace
+
     info               Show plugin configuration and status
 
 
@@ -147,6 +150,12 @@ IWE LSP keybindings (when enable_lsp_keybindings = true):
   `<leader>h`       <Plug>(iwe-lsp-rewrite-list-section)
   `<leader>l`       <Plug>(iwe-lsp-rewrite-section-list)
 
+Preview keybindings (when enable_preview_keybindings = true):
+  `<leader>ps`      <Plug>(iwe-preview-squash)
+  `<leader>pe`      <Plug>(iwe-preview-export)
+  `<leader>ph`      <Plug>(iwe-preview-export-headers)
+  `<leader>pw`      <Plug>(iwe-preview-export-workspace)
+
 Default Neovim LSP keybindings (available when LSP is active):
   `gD`              Go to declaration
   `gd`              Go to definition  
@@ -178,6 +187,10 @@ Available <Plug> Mappings:~
 *<Plug>(iwe-lsp-inline-reference)* Inline reference (refactor)
 *<Plug>(iwe-lsp-rewrite-list-section)* Rewrite list section (refactor)
 *<Plug>(iwe-lsp-rewrite-section-list)* Rewrite section list (refactor)
+*<Plug>(iwe-preview-squash)*       Generate squash markdown preview
+*<Plug>(iwe-preview-export)*       Generate export graph preview
+*<Plug>(iwe-preview-export-headers)* Generate export graph with headers preview
+*<Plug>(iwe-preview-export-workspace)* Generate workspace graph preview
 
 ================================================================================
 FUNCTIONS                                                        *iwe-functions*
@@ -218,6 +231,18 @@ require('iwe.telescope').pickers.backlinks()         *iwe.telescope.backlinks*
 require('iwe.telescope').pickers.headers()           *iwe.telescope.headers*
     Launch document symbols picker - headers (go equivalent).
 
+require('iwe.preview').generate_squash_preview()      *iwe.preview.squash*
+    Generate squashed markdown preview using iwe CLI.
+
+require('iwe.preview').generate_export_preview()      *iwe.preview.export*
+    Generate basic DOT graph as SVG using iwe CLI.
+
+require('iwe.preview').generate_export_headers_preview() *iwe.preview.export-headers*
+    Generate DOT graph with headers as SVG using iwe CLI.
+
+require('iwe.preview').generate_export_workspace_preview() *iwe.preview.export-workspace*
+    Generate full workspace graph as SVG using iwe CLI.
+
 
 ================================================================================
 HEALTH CHECKS                                                      *iwe-health*
@@ -233,6 +258,7 @@ The health check verifies:
 • Configuration path validity
 • Telescope availability and extensions
 • Optional dependencies
+• Preview functionality (iwe CLI and Graphviz)
 • Current LSP server status
 
 ================================================================================

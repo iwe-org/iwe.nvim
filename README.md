@@ -90,6 +90,7 @@ Open any `.md` file in your IWE project and enjoy:
 | `:IWE init` | Initialize IWE project in current directory |
 | `:IWE lsp start/stop/restart/status/toggle_inlay_hints` | Control LSP server |
 | `:IWE telescope find_files/paths/roots/grep/backlinks/headers` | Launch Telescope pickers |
+| `:IWE preview squash/export/export-headers/export-workspace` | Generate previews using IWE CLI |
 | `:IWE info` | Show plugin status and configuration |
 
 ## Telescope Integration
@@ -102,6 +103,15 @@ The plugin provides LSP-powered Telescope pickers:
 - **`:IWE telescope grep`** - Live grep search (g/ equivalent)
 - **`:IWE telescope backlinks`** - LSP references as backlinks (gr equivalent)
 - **`:IWE telescope headers`** - Document symbols as headers (go equivalent)
+
+## Preview Integration
+
+The plugin provides preview generation using the IWE CLI:
+
+- **`:IWE preview squash`** - Generate squashed markdown preview (combines content with depth 3)
+- **`:IWE preview export`** - Generate basic DOT graph as SVG (depth 2)
+- **`:IWE preview export-headers`** - Generate DOT graph with headers as SVG (depth 2, includes headers)
+- **`:IWE preview export-workspace`** - Generate full workspace graph as SVG (depth 1, all files)
 
 ## Configuration
 
@@ -119,6 +129,7 @@ require('iwe').setup({
     enable_markdown_mappings = true, -- Core markdown editing keybindings
     enable_telescope_keybindings = false, -- Set to true to enable gf, gs, ga, g/, gr, go
     enable_lsp_keybindings = false, -- Set to true to enable IWE-specific LSP keybindings
+    enable_preview_keybindings = false, -- Set to true to enable preview keybindings
     leader = "<leader>",
     localleader = "<localleader>"
   },
@@ -126,6 +137,11 @@ require('iwe').setup({
     enabled = true,
     setup_config = true,
     load_extensions = { "ui-select", "emoji" }
+  },
+  preview = {
+    output_dir = "~/tmp/preview", -- Directory for generated preview files
+    temp_dir = "/tmp", -- Directory for temporary files
+    auto_open = false -- Whether to automatically open generated previews
   }
 })
 ```
@@ -186,6 +202,17 @@ Standard LSP actions are available when the LSP server is active:
 | `<leader>rn` | Rename symbol |
 | `<leader>f` | Format document |
 
+### Preview Keybindings (when `enable_preview_keybindings = true`)
+
+IWE CLI preview generation in markdown files:
+
+| Key | Action |
+|-----|--------|
+| `<leader>ps` | Generate squash preview |
+| `<leader>pe` | Generate export graph preview |
+| `<leader>ph` | Generate export with headers preview |
+| `<leader>pw` | Generate workspace preview |
+
 ### Configuration Options
 
 ```lua
@@ -194,6 +221,7 @@ require('iwe').setup({
     enable_markdown_mappings = true,        -- Enable markdown editing keybindings
     enable_telescope_keybindings = true,   -- Enable telescope navigation keybindings
     enable_lsp_keybindings = true,         -- Enable IWE-specific LSP keybindings
+    enable_preview_keybindings = true,     -- Enable preview keybindings
   }
 })
 ```
@@ -214,6 +242,12 @@ vim.keymap.set('n', '<leader>e', '<Plug>(iwe-lsp-extract-section)')
 vim.keymap.set('n', '<leader>i', '<Plug>(iwe-lsp-inline-reference)')
 vim.keymap.set('n', '<leader>h', '<Plug>(iwe-lsp-rewrite-list-section)')
 vim.keymap.set('n', '<leader>l', '<Plug>(iwe-lsp-rewrite-section-list)')
+
+-- Preview keybindings (when enable_preview_keybindings = true)
+vim.keymap.set('n', '<leader>ps', '<Plug>(iwe-preview-squash)')
+vim.keymap.set('n', '<leader>pe', '<Plug>(iwe-preview-export)')
+vim.keymap.set('n', '<leader>ph', '<Plug>(iwe-preview-export-headers)')
+vim.keymap.set('n', '<leader>pw', '<Plug>(iwe-preview-export-workspace)')
 ```
 
 ## Requirements
@@ -221,6 +255,10 @@ vim.keymap.set('n', '<leader>l', '<Plug>(iwe-lsp-rewrite-section-list)')
 **Required:**
 - `iwes` LSP server in PATH
 - `nvim-telescope/telescope.nvim`
+
+**For Preview Functionality:**
+- `iwe` CLI in PATH (install from [iwe-org/iwe](https://github.com/iwe-org/iwe))
+- `neato` (Graphviz) for SVG generation
 
 **Recommended:**
 - [`MeanderingProgrammer/markdown.nvim`](https://github.com/MeanderingProgrammer/markdown.nvim) - Enhanced markdown rendering that pairs perfectly with IWE's editing features
@@ -235,6 +273,7 @@ Run `:checkhealth iwe` to diagnose any issues with:
 - Telescope integration
 - Project structure
 - Dependencies
+- Preview functionality (IWE CLI and Graphviz)
 
 ## Contributing
 
