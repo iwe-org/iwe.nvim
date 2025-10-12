@@ -146,8 +146,6 @@ Telescope keybindings (when enable_telescope_keybindings = true):
   `go`              <Plug>(iwe-telescope-headers)
 
 IWE LSP keybindings (when enable_lsp_keybindings = true):
-  `<leader>e`       <Plug>(iwe-lsp-extract-section)
-  `<leader>i`       <Plug>(iwe-lsp-inline-reference)
   `<leader>h`       <Plug>(iwe-lsp-rewrite-list-section)
   `<leader>l`       <Plug>(iwe-lsp-rewrite-section-list)
 

@@ -179,8 +179,6 @@ IWE-specific refactoring actions in markdown files:
 
 | Key | Action |
 |-----|--------|
-| `<leader>e` | Extract section (refactor) |
-| `<leader>i` | Inline reference (refactor) |
 | `<leader>h` | Rewrite list section (refactor) |
 | `<leader>l` | Rewrite section list (refactor) |
 
@@ -238,8 +236,6 @@ vim.keymap.set('n', 'gb', '<Plug>(iwe-telescope-backlinks)')
 vim.keymap.set('n', 'go', '<Plug>(iwe-telescope-headers)')
 
 -- IWE-specific LSP keybindings (when enable_lsp_keybindings = true)
-vim.keymap.set('n', '<leader>e', '<Plug>(iwe-lsp-extract-section)')
-vim.keymap.set('n', '<leader>i', '<Plug>(iwe-lsp-inline-reference)')
 vim.keymap.set('n', '<leader>h', '<Plug>(iwe-lsp-rewrite-list-section)')
 vim.keymap.set('n', '<leader>l', '<Plug>(iwe-lsp-rewrite-section-list)')
 

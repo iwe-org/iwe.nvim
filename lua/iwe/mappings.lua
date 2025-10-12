@@ -207,8 +207,6 @@ function M.setup_markdown_mappings()
 
       -- IWE-specific LSP keybindings (if enabled)
       if config.get().mappings.enable_lsp_keybindings then
-        vim.keymap.set('n', opts.mappings.leader .. 'e', '<Plug>(iwe-lsp-extract-section)', { buffer = buf })
-        vim.keymap.set('n', opts.mappings.leader .. 'i', '<Plug>(iwe-lsp-inline-reference)', { buffer = buf })
         vim.keymap.set('n', opts.mappings.leader .. 'h', '<Plug>(iwe-lsp-rewrite-list-section)', { buffer = buf })
         vim.keymap.set('n', opts.mappings.leader .. 'l', '<Plug>(iwe-lsp-rewrite-section-list)', { buffer = buf })
       end

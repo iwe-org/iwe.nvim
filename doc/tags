@@ -14,6 +14,7 @@
 <Plug>(iwe-preview-export-workspace)	iwe.txt	/*<Plug>(iwe-preview-export-workspace)*
 <Plug>(iwe-preview-squash)	iwe.txt	/*<Plug>(iwe-preview-squash)*
 <Plug>(iwe-telescope-backlinks)	iwe.txt	/*<Plug>(iwe-telescope-backlinks)*
+<Plug>(iwe-telescope-blockreferences)	iwe.txt	/*<Plug>(iwe-telescope-blockreferences)*
 <Plug>(iwe-telescope-find-files)	iwe.txt	/*<Plug>(iwe-telescope-find-files)*
 <Plug>(iwe-telescope-grep)	iwe.txt	/*<Plug>(iwe-telescope-grep)*
 <Plug>(iwe-telescope-headers)	iwe.txt	/*<Plug>(iwe-telescope-headers)*
@@ -42,6 +43,7 @@ iwe.preview.squash	iwe.txt	/*iwe.preview.squash*
 iwe.setup()	iwe.txt	/*iwe.setup()*
 iwe.start_lsp()	iwe.txt	/*iwe.start_lsp()*
 iwe.telescope.backlinks	iwe.txt	/*iwe.telescope.backlinks*
+iwe.telescope.blockreferences	iwe.txt	/*iwe.telescope.blockreferences*
 iwe.telescope.grep	iwe.txt	/*iwe.telescope.grep*
 iwe.telescope.headers	iwe.txt	/*iwe.telescope.headers*
 iwe.telescope.paths	iwe.txt	/*iwe.telescope.paths*
