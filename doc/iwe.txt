@@ -128,10 +128,14 @@ In markdown files:
   `-`               <Plug>(iwe-checklist-format)
   `<C-n>`           <Plug>(iwe-link-next)
   `<C-p>`           <Plug>(iwe-link-prev)
+  `<CR>`            <Plug>(iwe-lsp-go-to-definition)
 
 Insert mode in markdown files:
   `/d`              <Plug>(iwe-insert-date)
   `/w`              <Plug>(iwe-insert-week)
+
+Visual mode in markdown files:
+  `<CR>`            <Plug>(iwe-lsp-link)
 
 Global (Neovide only):
   `<D-l>`           <Plug>(iwe-lsp-start)
@@ -187,6 +191,9 @@ Available <Plug> Mappings:~
 *<Plug>(iwe-lsp-inline-reference)* Inline reference (refactor)
 *<Plug>(iwe-lsp-rewrite-list-section)* Rewrite list section (refactor)
 *<Plug>(iwe-lsp-rewrite-section-list)* Rewrite section list (refactor)
+*<Plug>(iwe-lsp-toggle-inlay-hints)* Toggle inlay hints
+*<Plug>(iwe-lsp-go-to-definition)* Go to definition
+*<Plug>(iwe-lsp-link)*             Create link from selection (visual mode)
 *<Plug>(iwe-preview-squash)*       Generate squash markdown preview
 *<Plug>(iwe-preview-export)*       Generate export graph preview
 *<Plug>(iwe-preview-export-headers)* Generate export graph with headers preview

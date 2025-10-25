@@ -152,13 +152,15 @@ require('iwe').setup({
 
 In markdown files:
 
-| Key | Action |
-|-----|--------|
-| `-` | Format current line as checklist item |
-| `<C-n>` | Navigate to next link |
-| `<C-p>` | Navigate to previous link |
-| `/d` | Insert current date |
-| `/w` | Insert current week |
+| Key | Action | Mode |
+|-----|--------|------|
+| `-` | Format current line as checklist item | Normal |
+| `<C-n>` | Navigate to next link | Normal |
+| `<C-p>` | Navigate to previous link | Normal |
+| `<CR>` | Go to definition | Normal |
+| `/d` | Insert current date | Insert |
+| `/w` | Insert current week | Insert |
+| `<CR>` | Create link from selection | Visual |
 
 ### Telescope Navigation (when `enable_telescope_keybindings = true`)
 
@@ -227,6 +229,10 @@ require('iwe').setup({
 All mappings are available as `<Plug>` mappings for custom configuration:
 
 ```lua
+-- Markdown editing keybindings (when enable_markdown_mappings = true)
+vim.keymap.set('n', '<CR>', '<Plug>(iwe-lsp-go-to-definition)') -- Go to definition
+vim.keymap.set('v', '<CR>', '<Plug>(iwe-lsp-link)') -- Create link from visual selection
+
 -- Default Telescope keybindings (when enable_telescope_keybindings = true)
 vim.keymap.set('n', 'gf', '<Plug>(iwe-telescope-find-files)')
 vim.keymap.set('n', 'gs', '<Plug>(iwe-telescope-paths)')
@@ -245,6 +251,22 @@ vim.keymap.set('n', '<leader>pe', '<Plug>(iwe-preview-export)')
 vim.keymap.set('n', '<leader>ph', '<Plug>(iwe-preview-export-headers)')
 vim.keymap.set('n', '<leader>pw', '<Plug>(iwe-preview-export-workspace)')
 ```
+
+### Using Enter Key for Navigation and Link Creation
+
+When `enable_markdown_mappings = true`, the `<CR>` (Enter) key provides context-aware functionality:
+
+**Normal mode**: Press `<CR>` to go to the definition of the symbol under the cursor. This works for:
+- Navigating to linked files
+- Jumping to symbol definitions
+- Following references
+
+**Visual mode**: Select text and press `<CR>` to create a link from the selection:
+1. Select text in visual mode (e.g., `viw` to select a word)
+2. Press `<CR>` (Enter)
+3. The LSP will automatically create a link from your selection
+
+This uses the IWE LSP's `custom.link` code action to intelligently link the selected text to the appropriate target in your knowledge base.
 
 ## Requirements
 

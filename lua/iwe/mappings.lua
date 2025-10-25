@@ -168,6 +168,21 @@ function M.setup_plug_mappings()
     silent = true,
     desc = 'Toggle inlay hints'
   })
+
+  create_plug_mapping('lsp-go-to-definition', function()
+    vim.lsp.buf.definition()
+  end, 'n', {
+    silent = true,
+    desc = 'Go to definition'
+  })
+
+  -- Visual mode code action
+  create_plug_mapping('lsp-link', function()
+    vim.lsp.buf.code_action({apply = true, context = { only = {"custom.link"}}})
+  end, 'v', {
+    silent = true,
+    desc = 'Create link from selection'
+  })
 end
 
 ---Setup markdown keymaps (only if enabled in config)
@@ -189,10 +204,14 @@ function M.setup_markdown_mappings()
       vim.keymap.set('n', '-', '<Plug>(iwe-checklist-format)', map_opts)
       vim.keymap.set('n', '<C-n>', '<Plug>(iwe-link-next)', map_opts)
       vim.keymap.set('n', '<C-p>', '<Plug>(iwe-link-prev)', map_opts)
+      vim.keymap.set('n', '<CR>', '<Plug>(iwe-lsp-go-to-definition)', map_opts)
 
       -- Insert mode mappings
       vim.keymap.set('i', '/d', '<Plug>(iwe-insert-date)', { buffer = buf })
       vim.keymap.set('i', '/w', '<Plug>(iwe-insert-week)', { buffer = buf })
+
+      -- Visual mode mapping
+      vim.keymap.set('v', '<CR>', '<Plug>(iwe-lsp-link)', { buffer = buf, silent = true })
 
       -- Telescope keybindings (if enabled)
       if config.get().mappings.enable_telescope_keybindings then
