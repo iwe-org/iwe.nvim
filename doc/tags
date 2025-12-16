@@ -5,10 +5,13 @@
 <Plug>(iwe-link-next)	iwe.txt	/*<Plug>(iwe-link-next)*
 <Plug>(iwe-link-prev)	iwe.txt	/*<Plug>(iwe-link-prev)*
 <Plug>(iwe-lsp-extract-section)	iwe.txt	/*<Plug>(iwe-lsp-extract-section)*
+<Plug>(iwe-lsp-go-to-definition)	iwe.txt	/*<Plug>(iwe-lsp-go-to-definition)*
 <Plug>(iwe-lsp-inline-reference)	iwe.txt	/*<Plug>(iwe-lsp-inline-reference)*
+<Plug>(iwe-lsp-link)	iwe.txt	/*<Plug>(iwe-lsp-link)*
 <Plug>(iwe-lsp-rewrite-list-section)	iwe.txt	/*<Plug>(iwe-lsp-rewrite-list-section)*
 <Plug>(iwe-lsp-rewrite-section-list)	iwe.txt	/*<Plug>(iwe-lsp-rewrite-section-list)*
 <Plug>(iwe-lsp-start)	iwe.txt	/*<Plug>(iwe-lsp-start)*
+<Plug>(iwe-lsp-toggle-inlay-hints)	iwe.txt	/*<Plug>(iwe-lsp-toggle-inlay-hints)*
 <Plug>(iwe-preview-export)	iwe.txt	/*<Plug>(iwe-preview-export)*
 <Plug>(iwe-preview-export-headers)	iwe.txt	/*<Plug>(iwe-preview-export-headers)*
 <Plug>(iwe-preview-export-workspace)	iwe.txt	/*<Plug>(iwe-preview-export-workspace)*

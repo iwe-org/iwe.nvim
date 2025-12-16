@@ -73,7 +73,7 @@ function M.setup_autocmds()
       local client = vim.lsp.get_client_by_id(args.data.client_id)
       if client and client.name == opts.lsp.name then
         -- Enable inlay hints if configured and supported
-        if opts.lsp.enable_inlay_hints and vim.lsp.inlay_hint and client.supports_method('textDocument/inlayHint') then
+        if opts.lsp.enable_inlay_hints and vim.lsp.inlay_hint and client:supports_method('textDocument/inlayHint') then
           vim.lsp.inlay_hint.enable(true, { bufnr = args.buf })
         end
 
