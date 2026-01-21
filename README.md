@@ -8,9 +8,23 @@ You can learn more at [IWE.md](https://iwe.md)
 
 - **🏗️ Project Initialization**: Create IWE projects with `:IWE init`
 - **🔍 LSP Integration**: Automatically starts `iwes` LSP server for `.iwe` projects
-- **🔭 Telescope Integration**: Find IWE files across all your projects
+- **🔭 Multi-Backend Picker**: Supports Telescope, fzf-lua, Snacks, mini.pick with vim.ui.select fallback
 - **📝 Markdown Enhancements**: Writing-focused features for markdown editing
 - **⚙️ Modern Architecture**: Type-safe, well-documented, with health checks
+
+## Supported Picker Backends
+
+The plugin supports multiple fuzzy finder backends (in priority order):
+
+| Backend | Plugin | Notes |
+|---------|--------|-------|
+| Telescope | [nvim-telescope/telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) | Full-featured, best LSP integration |
+| fzf-lua | [ibhagwan/fzf-lua](https://github.com/ibhagwan/fzf-lua) | Fast, fzf-based |
+| Snacks | [folke/snacks.nvim](https://github.com/folke/snacks.nvim) | Modern, good capabilities |
+| mini.pick | [echasnovski/mini.pick](https://github.com/echasnovski/mini.pick) | Lightweight |
+| vim.ui.select | Built-in | Fallback for LSP-based pickers |
+
+The plugin auto-detects the best available backend, or you can configure a specific one.
 
 ## Getting Started
 
@@ -22,29 +36,15 @@ Add to your Neovim configuration (using lazy.nvim):
 {
   'iwe-org/iwe.nvim',
   dependencies = {
-    'nvim-telescope/telescope.nvim',  -- Required
+    -- At least one picker recommended (any of these):
+    'nvim-telescope/telescope.nvim',
+    -- 'ibhagwan/fzf-lua',
+    -- 'folke/snacks.nvim',
+    -- 'echasnovski/mini.pick',
   },
   config = function()
     require('iwe').setup({
-      lsp = {
-        cmd = { "iwes" },
-        name = "iwes",
-        debounce_text_changes = 500,
-        auto_format_on_save = true,
-        enable_inlay_hints = true
-      },
-      mappings = {
-        enable_markdown_mappings = true,
-        enable_telescope_keybindings = false,
-        enable_lsp_keybindings = false,
-        leader = "<leader>",
-        localleader = "<localleader>"
-      },
-      telescope = {
-        enabled = true,
-        setup_config = true,
-        load_extensions = { "ui-select", "emoji" }
-      }
+      -- All options are optional with sensible defaults
     })
   end
 }
@@ -60,7 +60,7 @@ After installing the plugin, run the health check to ensure everything is workin
 
 This will verify:
 - `iwes` LSP server is available in PATH ([install instructions](https://github.com/iwe-org/iwe))
-- Telescope integration is working
+- Picker backend availability
 - Plugin configuration is valid
 
 ### 3. Initialize Your First IWE Directory
@@ -74,7 +74,7 @@ Navigate to your notes directory and run:
 This creates a `.iwe` marker directory that:
 - Identifies this directory as an IWE project root
 - Enables LSP server integration
-- Makes the project discoverable by Telescope
+- Makes the project discoverable by the picker
 
 ### 4. Start Writing
 
@@ -88,21 +88,16 @@ Open any `.md` file in your IWE project and enjoy:
 | Command | Description |
 |---------|-------------|
 | `:IWE init` | Initialize IWE project in current directory |
+| `:IWE find_files` | Find files in project |
+| `:IWE paths` | Workspace symbols (paths) |
+| `:IWE roots` | Namespace symbols (roots) |
+| `:IWE grep` | Live grep search |
+| `:IWE blockreferences` | LSP references (no declaration) |
+| `:IWE backlinks` | LSP references (with declaration) |
+| `:IWE headers` | Document symbols (headers) |
 | `:IWE lsp start/stop/restart/status/toggle_inlay_hints` | Control LSP server |
-| `:IWE telescope find_files/paths/roots/grep/backlinks/headers` | Launch Telescope pickers |
-| `:IWE preview squash/export/export-headers/export-workspace` | Generate previews using IWE CLI |
+| `:IWE preview squash/export/export-headers/export-workspace` | Generate previews |
 | `:IWE info` | Show plugin status and configuration |
-
-## Telescope Integration
-
-The plugin provides LSP-powered Telescope pickers:
-
-- **`:IWE telescope find_files`** - Find files (gf equivalent)
-- **`:IWE telescope paths`** - Workspace symbols as paths (gs equivalent)
-- **`:IWE telescope roots`** - Namespace symbols as roots (ga equivalent)
-- **`:IWE telescope grep`** - Live grep search (g/ equivalent)
-- **`:IWE telescope backlinks`** - LSP references as backlinks (gb equivalent)
-- **`:IWE telescope headers`** - Document symbols as headers (go equivalent)
 
 ## Preview Integration
 
@@ -126,12 +121,16 @@ require('iwe').setup({
     debounce_text_changes = 500
   },
   mappings = {
-    enable_markdown_mappings = true, -- Core markdown editing keybindings
-    enable_telescope_keybindings = false, -- Set to true to enable gf, gs, ga, g/, gb, go
-    enable_lsp_keybindings = false, -- Set to true to enable IWE-specific LSP keybindings
+    enable_markdown_mappings = true,  -- Core markdown editing keybindings
+    enable_picker_keybindings = false, -- Set to true to enable gf, gs, ga, g/, gb, gR, go
+    enable_lsp_keybindings = false,   -- Set to true to enable IWE-specific LSP keybindings
     enable_preview_keybindings = false, -- Set to true to enable preview keybindings
     leader = "<leader>",
     localleader = "<localleader>"
+  },
+  picker = {
+    backend = "auto",  -- "auto", "telescope", "fzf_lua", "snacks", "mini", "vim_ui"
+    fallback_notify = true
   },
   telescope = {
     enabled = true,
@@ -139,9 +138,9 @@ require('iwe').setup({
     load_extensions = { "ui-select", "emoji" }
   },
   preview = {
-    output_dir = "~/tmp/preview", -- Directory for generated preview files
-    temp_dir = "/tmp", -- Directory for temporary files
-    auto_open = false -- Whether to automatically open generated previews
+    output_dir = "~/tmp/preview",
+    temp_dir = "/tmp",
+    auto_open = false
   }
 })
 ```
@@ -162,18 +161,19 @@ In markdown files:
 | `/w` | Insert current week | Insert |
 | `<CR>` | Create link from selection | Visual |
 
-### Telescope Navigation (when `enable_telescope_keybindings = true`)
+### Picker Navigation (when `enable_picker_keybindings = true`)
 
 In markdown files:
 
 | Key | Action | Command Equivalent |
-|-----|--------|--------------------|
-| `gf` | Find files | `:IWE telescope find_files` |
-| `gs` | Workspace symbols (paths) | `:IWE telescope paths` |
-| `ga` | Namespace symbols (roots) | `:IWE telescope roots` |
-| `g/` | Live grep search | `:IWE telescope grep` |
-| `gb` | LSP references (backlinks) | `:IWE telescope backlinks` |
-| `go` | Document symbols (headers) | `:IWE telescope headers` |
+|-----|--------|-------------------|
+| `gf` | Find files | `:IWE find_files` |
+| `gs` | Workspace symbols (paths) | `:IWE paths` |
+| `ga` | Namespace symbols (roots) | `:IWE roots` |
+| `g/` | Live grep search | `:IWE grep` |
+| `gb` | Block references | `:IWE blockreferences` |
+| `gR` | Backlinks | `:IWE backlinks` |
+| `go` | Document symbols (headers) | `:IWE headers` |
 
 ### IWE LSP Keybindings (when `enable_lsp_keybindings = true`)
 
@@ -213,39 +213,27 @@ IWE CLI preview generation in markdown files:
 | `<leader>ph` | Generate export with headers preview |
 | `<leader>pw` | Generate workspace preview |
 
-### Configuration Options
-
-```lua
-require('iwe').setup({
-  mappings = {
-    enable_markdown_mappings = true,        -- Enable markdown editing keybindings
-    enable_telescope_keybindings = true,   -- Enable telescope navigation keybindings
-    enable_lsp_keybindings = true,         -- Enable IWE-specific LSP keybindings
-    enable_preview_keybindings = true,     -- Enable preview keybindings
-  }
-})
-```
+### Custom Plug Mappings
 
 All mappings are available as `<Plug>` mappings for custom configuration:
 
 ```lua
--- Markdown editing keybindings (when enable_markdown_mappings = true)
-vim.keymap.set('n', '<CR>', '<Plug>(iwe-lsp-go-to-definition)') -- Go to definition
-vim.keymap.set('v', '<CR>', '<Plug>(iwe-lsp-link)') -- Create link from visual selection
+-- Picker keybindings
+vim.keymap.set('n', 'gf', '<Plug>(iwe-picker-find-files)')
+vim.keymap.set('n', 'gs', '<Plug>(iwe-picker-paths)')
+vim.keymap.set('n', 'ga', '<Plug>(iwe-picker-roots)')
+vim.keymap.set('n', 'g/', '<Plug>(iwe-picker-grep)')
+vim.keymap.set('n', 'gb', '<Plug>(iwe-picker-blockreferences)')
+vim.keymap.set('n', 'gR', '<Plug>(iwe-picker-backlinks)')
+vim.keymap.set('n', 'go', '<Plug>(iwe-picker-headers)')
 
--- Default Telescope keybindings (when enable_telescope_keybindings = true)
-vim.keymap.set('n', 'gf', '<Plug>(iwe-telescope-find-files)')
-vim.keymap.set('n', 'gs', '<Plug>(iwe-telescope-paths)')
-vim.keymap.set('n', 'ga', '<Plug>(iwe-telescope-roots)')
-vim.keymap.set('n', 'g/', '<Plug>(iwe-telescope-grep)')
-vim.keymap.set('n', 'gb', '<Plug>(iwe-telescope-backlinks)')
-vim.keymap.set('n', 'go', '<Plug>(iwe-telescope-headers)')
-
--- IWE-specific LSP keybindings (when enable_lsp_keybindings = true)
+-- LSP keybindings
+vim.keymap.set('n', '<CR>', '<Plug>(iwe-lsp-go-to-definition)')
+vim.keymap.set('v', '<CR>', '<Plug>(iwe-lsp-link)')
 vim.keymap.set('n', '<leader>h', '<Plug>(iwe-lsp-rewrite-list-section)')
 vim.keymap.set('n', '<leader>l', '<Plug>(iwe-lsp-rewrite-section-list)')
 
--- Preview keybindings (when enable_preview_keybindings = true)
+-- Preview keybindings
 vim.keymap.set('n', '<leader>ps', '<Plug>(iwe-preview-squash)')
 vim.keymap.set('n', '<leader>pe', '<Plug>(iwe-preview-export)')
 vim.keymap.set('n', '<leader>ph', '<Plug>(iwe-preview-export-headers)')
@@ -272,7 +260,13 @@ This uses the IWE LSP's `custom.link` code action to intelligently link the sele
 
 **Required:**
 - `iwes` LSP server in PATH
-- `nvim-telescope/telescope.nvim`
+
+**Picker backends (at least one recommended):**
+- `nvim-telescope/telescope.nvim` - Full-featured fuzzy finder
+- `ibhagwan/fzf-lua` - Fast fzf-based picker
+- `folke/snacks.nvim` - Modern picker
+- `echasnovski/mini.pick` - Lightweight picker
+- Falls back to `vim.ui.select` for LSP-based pickers if none installed
 
 **For Preview Functionality:**
 - `iwe` CLI in PATH (install from [iwe-org/iwe](https://github.com/iwe-org/iwe))
@@ -288,7 +282,7 @@ This uses the IWE LSP's `custom.link` code action to intelligently link the sele
 
 Run `:checkhealth iwe` to diagnose any issues with:
 - LSP server availability
-- Telescope integration
+- Picker backend detection
 - Project structure
 - Dependencies
 - Preview functionality (IWE CLI and Graphviz)

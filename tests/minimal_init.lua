@@ -24,8 +24,12 @@ require('iwe').setup({
   },
   mappings = {
     enable_markdown_mappings = true,
-    enable_telescope_keybindings = false,
+    enable_picker_keybindings = false,
     enable_lsp_keybindings = false,
+  },
+  picker = {
+    backend = 'auto',
+    fallback_notify = false, -- Don't notify in tests
   },
   telescope = {
     enabled = true,

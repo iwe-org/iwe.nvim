@@ -54,55 +54,64 @@ function M.setup_plug_mappings()
     desc = 'Manually start IWE LSP server'
   })
 
-  -- Telescope pickers
-  create_plug_mapping('telescope-find-files', function()
-    require('iwe.telescope').pickers.find_files()
+  -- Picker mappings (new, backend-agnostic)
+  create_plug_mapping('picker-find-files', function()
+    require('iwe.picker').find_files()
   end, 'n', {
     silent = true,
     desc = 'Find files (gf equivalent)'
   })
 
-  create_plug_mapping('telescope-paths', function()
-    require('iwe.telescope').pickers.paths()
+  create_plug_mapping('picker-paths', function()
+    require('iwe.picker').paths()
   end, 'n', {
     silent = true,
     desc = 'Workspace symbols - paths (gs equivalent)'
   })
 
-  create_plug_mapping('telescope-roots', function()
-    require('iwe.telescope').pickers.roots()
+  create_plug_mapping('picker-roots', function()
+    require('iwe.picker').roots()
   end, 'n', {
     silent = true,
     desc = 'Namespace symbols - roots (ga equivalent)'
   })
 
-  create_plug_mapping('telescope-blockreferences', function()
-    require('iwe.telescope').pickers.blockreferences()
+  create_plug_mapping('picker-blockreferences', function()
+    require('iwe.picker').blockreferences()
   end, 'n', {
     silent = true,
     desc = 'LSP references - blockreferences (gb equivalent)'
   })
 
-  create_plug_mapping('telescope-backlinks', function()
-    require('iwe.telescope').pickers.backlinks()
+  create_plug_mapping('picker-backlinks', function()
+    require('iwe.picker').backlinks()
   end, 'n', {
     silent = true,
     desc = 'LSP references - backlinks (gR equivalent)'
   })
 
-  create_plug_mapping('telescope-headers', function()
-    require('iwe.telescope').pickers.headers()
+  create_plug_mapping('picker-headers', function()
+    require('iwe.picker').headers()
   end, 'n', {
     silent = true,
     desc = 'Document symbols - headers (go equivalent)'
   })
 
-  create_plug_mapping('telescope-grep', function()
-    require('iwe.telescope').pickers.grep()
+  create_plug_mapping('picker-grep', function()
+    require('iwe.picker').grep()
   end, 'n', {
     silent = true,
     desc = 'Live grep search (g/ equivalent)'
   })
+
+  -- Backward compatibility aliases (deprecated telescope- prefixed mappings)
+  vim.keymap.set('n', '<Plug>(iwe-telescope-find-files)', '<Plug>(iwe-picker-find-files)', { remap = true })
+  vim.keymap.set('n', '<Plug>(iwe-telescope-paths)', '<Plug>(iwe-picker-paths)', { remap = true })
+  vim.keymap.set('n', '<Plug>(iwe-telescope-roots)', '<Plug>(iwe-picker-roots)', { remap = true })
+  vim.keymap.set('n', '<Plug>(iwe-telescope-blockreferences)', '<Plug>(iwe-picker-blockreferences)', { remap = true })
+  vim.keymap.set('n', '<Plug>(iwe-telescope-backlinks)', '<Plug>(iwe-picker-backlinks)', { remap = true })
+  vim.keymap.set('n', '<Plug>(iwe-telescope-headers)', '<Plug>(iwe-picker-headers)', { remap = true })
+  vim.keymap.set('n', '<Plug>(iwe-telescope-grep)', '<Plug>(iwe-picker-grep)', { remap = true })
 
   -- Preview mappings
   create_plug_mapping('preview-squash', function()
@@ -213,15 +222,16 @@ function M.setup_markdown_mappings()
       -- Visual mode mapping
       vim.keymap.set('v', '<CR>', '<Plug>(iwe-lsp-link)', { buffer = buf, silent = true })
 
-      -- Telescope keybindings (if enabled)
-      if config.get().mappings.enable_telescope_keybindings then
-        vim.keymap.set('n', 'gf', '<Plug>(iwe-telescope-find-files)', { buffer = buf })
-        vim.keymap.set('n', 'gs', '<Plug>(iwe-telescope-paths)', { buffer = buf })
-        vim.keymap.set('n', 'ga', '<Plug>(iwe-telescope-roots)', { buffer = buf })
-        vim.keymap.set('n', 'g/', '<Plug>(iwe-telescope-grep)', { buffer = buf })
-        vim.keymap.set('n', 'gb', '<Plug>(iwe-telescope-blockreferences)', { buffer = buf })
-        vim.keymap.set('n', 'gR', '<Plug>(iwe-telescope-backlinks)', { buffer = buf })
-        vim.keymap.set('n', 'go', '<Plug>(iwe-telescope-headers)', { buffer = buf })
+      -- Picker keybindings (if enabled)
+      -- Also check deprecated enable_telescope_keybindings for backward compatibility
+      if config.get().mappings.enable_picker_keybindings then
+        vim.keymap.set('n', 'gf', '<Plug>(iwe-picker-find-files)', { buffer = buf })
+        vim.keymap.set('n', 'gs', '<Plug>(iwe-picker-paths)', { buffer = buf })
+        vim.keymap.set('n', 'ga', '<Plug>(iwe-picker-roots)', { buffer = buf })
+        vim.keymap.set('n', 'g/', '<Plug>(iwe-picker-grep)', { buffer = buf })
+        vim.keymap.set('n', 'gb', '<Plug>(iwe-picker-blockreferences)', { buffer = buf })
+        vim.keymap.set('n', 'gR', '<Plug>(iwe-picker-backlinks)', { buffer = buf })
+        vim.keymap.set('n', 'go', '<Plug>(iwe-picker-headers)', { buffer = buf })
       end
 
       -- IWE-specific LSP keybindings (if enabled)

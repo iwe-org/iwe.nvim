@@ -1,7 +1,8 @@
 ---@class IWE.Config
 ---@field lsp IWE.Config.LSP LSP server configuration
 ---@field mappings IWE.Config.Mappings Key mapping configuration
----@field telescope IWE.Config.Telescope Telescope integration configuration
+---@field picker IWE.Config.Picker Picker backend configuration
+---@field telescope IWE.Config.Telescope Telescope integration configuration (deprecated, use picker)
 ---@field preview IWE.Config.Preview Preview generation configuration
 
 
@@ -14,11 +15,16 @@
 
 ---@class IWE.Config.Mappings
 ---@field enable_markdown_mappings boolean Whether to enable core markdown editing key mappings
----@field enable_telescope_keybindings boolean Whether to enable telescope keybindings (gf, gs, ga, etc.)
----@field enable_lsp_keybindings boolean Whether to enable IWE-specific LSP keybindings (<leader>e, <leader>i, etc.)
----@field enable_preview_keybindings boolean Whether to enable preview keybindings (<leader>ps, <leader>pe, etc.)
+---@field enable_picker_keybindings boolean Whether to enable picker keybindings (gf, gs, ga, etc.)
+---@field enable_telescope_keybindings boolean Deprecated alias for enable_picker_keybindings
+---@field enable_lsp_keybindings boolean Whether to enable IWE-specific LSP keybindings
+---@field enable_preview_keybindings boolean Whether to enable preview keybindings
 ---@field leader string Leader key for mappings
 ---@field localleader string Local leader key for mappings
+
+---@class IWE.Config.Picker
+---@field backend string|function Backend: "auto", "telescope", "fzf_lua", "snacks", "mini", "vim_ui", or function
+---@field fallback_notify boolean Whether to notify when falling back to another backend
 
 ---@class IWE.Config.Telescope
 ---@field enabled boolean Whether to enable Telescope integration
@@ -43,11 +49,16 @@ M.defaults = {
   },
   mappings = {
     enable_markdown_mappings = true,
-    enable_telescope_keybindings = false,
+    enable_picker_keybindings = false,
+    enable_telescope_keybindings = false, -- deprecated alias
     enable_lsp_keybindings = false,
     enable_preview_keybindings = false,
     leader = "<leader>",
     localleader = "<localleader>"
+  },
+  picker = {
+    backend = "auto",
+    fallback_notify = true,
   },
   telescope = {
     enabled = true,
@@ -105,6 +116,23 @@ local function validate_config(opts)
     end
   end
 
+  if opts.picker then
+    if opts.picker.backend ~= nil then
+      local backend = opts.picker.backend
+      local valid_backends = { "auto", "telescope", "fzf_lua", "snacks", "mini", "vim_ui" }
+      if type(backend) ~= "function" and type(backend) ~= "string" then
+        return false, "picker.backend must be a string or function"
+      end
+      if type(backend) == "string" and not vim.tbl_contains(valid_backends, backend) then
+        local valid_str = table.concat(valid_backends, ", ")
+        return false, string.format("picker.backend must be one of: %s, or a function", valid_str)
+      end
+    end
+    if opts.picker.fallback_notify ~= nil and type(opts.picker.fallback_notify) ~= "boolean" then
+      return false, "picker.fallback_notify must be a boolean"
+    end
+  end
+
   return true, nil
 end
 
@@ -113,13 +141,20 @@ end
 function M.setup(opts)
   opts = opts or {}
 
-  local success, error = validate_config(opts)
+  local success, err = validate_config(opts)
   if not success then
-    vim.notify(string.format("IWE configuration error: %s", error), vim.log.levels.ERROR)
+    vim.notify(string.format("IWE configuration error: %s", err), vim.log.levels.ERROR)
     return
   end
 
   M.options = vim.tbl_deep_extend("force", M.defaults, opts)
+
+  -- Handle deprecated enable_telescope_keybindings option
+  if M.options.mappings then
+    if M.options.mappings.enable_telescope_keybindings and not M.options.mappings.enable_picker_keybindings then
+      M.options.mappings.enable_picker_keybindings = M.options.mappings.enable_telescope_keybindings
+    end
+  end
 end
 
 ---Get current configuration

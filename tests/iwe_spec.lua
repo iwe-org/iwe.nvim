@@ -15,20 +15,25 @@ describe('IWE Plugin', function()
       assert.are.equal(opts.lsp.cmd[1], 'iwes')
       assert.are.equal(opts.lsp.name, 'iwes')
       assert.are.equal(opts.mappings.enable_markdown_mappings, true)
-      assert.are.equal(opts.mappings.enable_telescope_keybindings, false)
+      assert.are.equal(opts.mappings.enable_picker_keybindings, false)
       assert.are.equal(opts.mappings.enable_lsp_keybindings, false)
+      assert.are.equal(opts.picker.backend, 'auto')
     end)
 
     it('should merge user configuration', function()
       iwe.setup({
         mappings = {
-          enable_telescope_keybindings = true
+          enable_picker_keybindings = true
+        },
+        picker = {
+          backend = 'telescope'
         }
       })
       local opts = config.get()
 
-      assert.are.equal(opts.mappings.enable_telescope_keybindings, true)
+      assert.are.equal(opts.mappings.enable_picker_keybindings, true)
       assert.are.equal(opts.mappings.enable_markdown_mappings, true) -- default preserved
+      assert.are.equal(opts.picker.backend, 'telescope')
     end)
   end)
 

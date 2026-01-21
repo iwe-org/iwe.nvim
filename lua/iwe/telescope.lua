@@ -1,4 +1,7 @@
 ---@class IWE.Telescope
+---Backward compatibility wrapper for telescope integration.
+---The picker functionality has been moved to lua/iwe/picker/.
+---This module is kept for backward compatibility and telescope-specific setup.
 local M = {}
 
 local _ = require('iwe.config')
@@ -10,6 +13,8 @@ function M.is_available()
 end
 
 ---Setup Telescope configuration
+---This function configures telescope-specific settings like layout and extensions.
+---The picker functionality is now handled by the picker module.
 function M.setup()
   if not M.is_available() then
     vim.notify("Telescope not found - IWE Telescope integration disabled", vim.log.levels.WARN)
@@ -137,157 +142,27 @@ function M.setup()
   end
 end
 
----Telescope pickers for IWE
-local pickers = {}
-
----Find files with Telescope (equivalent to gf)
-function pickers.find_files()
-  if not M.is_available() then
-    vim.notify("Telescope not available", vim.log.levels.ERROR)
-    return
+---@deprecated Use require('iwe.picker') instead
+---Backward compatibility: pickers table that delegates to picker module
+M.pickers = setmetatable({}, {
+  __index = function(_, key)
+    local picker = require('iwe.picker')
+    local mapping = {
+      find_files = picker.find_files,
+      paths = picker.paths,
+      roots = picker.roots,
+      grep = picker.grep,
+      blockreferences = picker.blockreferences,
+      backlinks = picker.backlinks,
+      headers = picker.headers,
+    }
+    if mapping[key] then
+      return mapping[key]
+    end
+    return function()
+      vim.notify(string.format("Unknown picker: %s", key), vim.log.levels.ERROR)
+    end
   end
-
-  require('telescope.builtin').find_files({
-    layout_config = {
-      horizontal = {
-        prompt_position = "top",
-        preview_width = 0.7,
-        width = 0.9,
-        height = 0.9,
-      },
-    },
-  })
-end
-
----Dynamic workspace symbols - paths (equivalent to gs)
-function pickers.paths()
-  if not M.is_available() then
-    vim.notify("Telescope not available", vim.log.levels.ERROR)
-    return
-  end
-
-  require('telescope.builtin').lsp_dynamic_workspace_symbols({
-    prompt_title = "IWE Paths",
-    fname_width = 0,
-    symbol_width = 100,
-    symbol_type_width = 0,
-    symbol_line = false,
-    layout_config = {
-      horizontal = {
-        preview_width = 0.5,
-        width = 0.9,
-        height = 0.9,
-      },
-    },
-  })
-end
-
----Dynamic workspace symbols - namespace symbols as roots (equivalent to ga)
-function pickers.roots()
-  if not M.is_available() then
-    vim.notify("Telescope not available", vim.log.levels.ERROR)
-    return
-  end
-
-  require('telescope.builtin').lsp_dynamic_workspace_symbols({
-    symbols = { "namespace" },
-    prompt_title = "IWE Roots",
-    layout_config = {
-      horizontal = {
-        prompt_position = "top",
-        preview_width = 0.7,
-        width = 0.9,
-        height = 0.9,
-      },
-    },
-  })
-end
-
----LSP references - block references (equivalent to gb)
-function pickers.blockreferences()
-  if not M.is_available() then
-    vim.notify("Telescope not available", vim.log.levels.ERROR)
-    return
-  end
-
-  require('telescope.builtin').lsp_references({
-    prompt_title = "IWE Block references",
-    layout_config = {
-      horizontal = {
-        prompt_position = "top",
-        preview_width = 0.7,
-        width = 0.9,
-        height = 0.9,
-      },
-    },
-    include_declaration = false,
-  })
-end
-
----LSP references - backlinks (equivalent to gR)
-function pickers.backlinks()
-  if not M.is_available() then
-    vim.notify("Telescope not available", vim.log.levels.ERROR)
-    return
-  end
-
-  require('telescope.builtin').lsp_references({
-    prompt_title = "IWE Backlinks",
-    layout_config = {
-      horizontal = {
-        prompt_position = "top",
-        preview_width = 0.7,
-        width = 0.9,
-        height = 0.9,
-      },
-    },
-    include_declaration = true,
-  })
-end
-
----LSP document symbols - headers (equivalent to go)
-function pickers.headers()
-  if not M.is_available() then
-    vim.notify("Telescope not available", vim.log.levels.ERROR)
-    return
-  end
-
-  require('telescope.builtin').lsp_document_symbols({
-    prompt_title = "IWE Headers",
-    layout_config = {
-      horizontal = {
-        prompt_position = "top",
-        preview_width = 0.7,
-        width = 0.9,
-        height = 0.9,
-      },
-    },
-  })
-end
-
----Live grep
-function pickers.grep()
-  if not M.is_available() then
-    vim.notify("Telescope not available", vim.log.levels.ERROR)
-    return
-  end
-
-  require('telescope.builtin').live_grep({
-    prompt_title = "Live Grep",
-    layout_config = {
-      horizontal = {
-        prompt_position = "top",
-        preview_width = 0.7,
-        width = 0.9,
-        height = 0.9,
-      },
-    },
-  })
-end
-
-
--- Export pickers
-M.pickers = pickers
+})
 
 return M
-

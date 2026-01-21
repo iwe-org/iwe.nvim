@@ -2,7 +2,7 @@
 local M = {}
 
 local lsp = require('iwe.lsp')
-local telescope = require('iwe.telescope')
+local picker = require('iwe.picker')
 local preview = require('iwe.preview')
 
 
@@ -12,10 +12,10 @@ local function complete_lsp_commands()
   return { 'start', 'stop', 'restart', 'status', 'toggle_inlay_hints' }
 end
 
----Get completion for Telescope commands
+---Get completion for Telescope commands (deprecated, kept for backward compatibility)
 ---@return string[]
 local function complete_telescope_commands()
-  return { 'find_files', 'paths', 'roots', 'grep', 'backlinks', 'headers', 'setup' }
+  return { 'find_files', 'paths', 'roots', 'grep', 'blockreferences', 'backlinks', 'headers', 'setup' }
 end
 
 ---Get completion for Preview commands
@@ -91,32 +91,47 @@ local function handle_lsp_command(subcmd)
   end
 end
 
----Handle Telescope subcommands
----@param subcmd string The subcommand (files, project, grep, nav, setup)
+---Handle picker subcommands
+---@param subcmd string The subcommand (find_files, paths, roots, grep, blockreferences, backlinks, headers)
+local function handle_picker_command(subcmd)
+  if subcmd == 'find_files' then
+    picker.find_files()
+  elseif subcmd == 'paths' then
+    picker.paths()
+  elseif subcmd == 'roots' then
+    picker.roots()
+  elseif subcmd == 'grep' then
+    picker.grep()
+  elseif subcmd == 'blockreferences' then
+    picker.blockreferences()
+  elseif subcmd == 'backlinks' then
+    picker.backlinks()
+  elseif subcmd == 'headers' then
+    picker.headers()
+  else
+    vim.notify(string.format("Unknown picker command: %s", subcmd), vim.log.levels.ERROR)
+  end
+end
+
+---Handle Telescope subcommands (deprecated, kept for backward compatibility)
+---@param subcmd string The subcommand
 local function handle_telescope_command(subcmd)
-  if not telescope.is_available() then
-    vim.notify("Telescope not available - please install nvim-telescope/telescope.nvim", vim.log.levels.ERROR)
+  vim.notify("IWE: ':IWE telescope' is deprecated, use ':IWE <command>' directly instead", vim.log.levels.WARN)
+
+  if subcmd == 'setup' then
+    -- Special case: telescope setup still uses the telescope module
+    local telescope = require('iwe.telescope')
+    if telescope.is_available() then
+      telescope.setup()
+      vim.notify("Telescope configuration applied")
+    else
+      vim.notify("Telescope not available", vim.log.levels.ERROR)
+    end
     return
   end
 
-  if subcmd == 'find_files' then
-    telescope.pickers.find_files()
-  elseif subcmd == 'paths' then
-    telescope.pickers.paths()
-  elseif subcmd == 'roots' then
-    telescope.pickers.roots()
-  elseif subcmd == 'grep' then
-    telescope.pickers.grep()
-  elseif subcmd == 'backlinks' then
-    telescope.pickers.backlinks()
-  elseif subcmd == 'headers' then
-    telescope.pickers.headers()
-  elseif subcmd == 'setup' then
-    telescope.setup()
-    vim.notify("Telescope configuration applied")
-  else
-    vim.notify(string.format("Unknown Telescope command: %s", subcmd), vim.log.levels.ERROR)
-  end
+  -- Delegate to picker for other commands
+  handle_picker_command(subcmd)
 end
 
 ---Handle Preview subcommands
@@ -140,6 +155,17 @@ local function handle_preview_command(subcmd)
   end
 end
 
+---List of picker commands for direct invocation
+local picker_commands = {
+  find_files = true,
+  paths = true,
+  roots = true,
+  grep = true,
+  blockreferences = true,
+  backlinks = true,
+  headers = true,
+}
+
 ---Main IWE command handler
 ---@param opts table Command options from nvim_create_user_command
 local function iwe_command(opts)
@@ -153,6 +179,12 @@ local function iwe_command(opts)
 
   local subcmd = args[1]
 
+  -- Direct picker commands (new syntax: :IWE find_files, :IWE paths, etc.)
+  if picker_commands[subcmd] then
+    handle_picker_command(subcmd)
+    return
+  end
+
   if subcmd == 'lsp' then
     if #args < 2 then
       vim.notify("Usage: IWE lsp <start|stop|restart|status|toggle_inlay_hints>", vim.log.levels.ERROR)
@@ -160,8 +192,9 @@ local function iwe_command(opts)
     end
     handle_lsp_command(args[2])
   elseif subcmd == 'telescope' or subcmd == 'tel' then
+    -- Deprecated: kept for backward compatibility
     if #args < 2 then
-      vim.notify("Usage: IWE telescope <files|project|grep|nav|setup>", vim.log.levels.ERROR)
+      vim.notify("Usage: IWE telescope <find_files|paths|roots|...>", vim.log.levels.ERROR)
       return
     end
     handle_telescope_command(args[2])
@@ -187,15 +220,15 @@ local function iwe_command(opts)
       "",
       "Mappings Configuration:",
       string.format("  Markdown Mappings: %s", config.mappings.enable_markdown_mappings),
-      string.format("  Telescope Keybindings: %s", config.mappings.enable_telescope_keybindings),
+      string.format("  Picker Keybindings: %s", config.mappings.enable_picker_keybindings),
       string.format("  LSP Keybindings: %s", config.mappings.enable_lsp_keybindings),
       string.format("  Leader: %s", config.mappings.leader),
       string.format("  Local Leader: %s", config.mappings.localleader),
       "",
-      "Telescope Configuration:",
-      string.format("  Enabled: %s", config.telescope.enabled),
-      string.format("  Setup Config: %s", config.telescope.setup_config),
-      string.format("  Extensions: %s", table.concat(config.telescope.load_extensions, ", ")),
+      "Picker Configuration:",
+      string.format("  Backend: %s",
+        type(config.picker.backend) == "function" and "custom function" or config.picker.backend),
+      string.format("  Fallback Notify: %s", config.picker.fallback_notify),
       "",
       "Preview Configuration:",
       string.format("  Output Dir: %s", config.preview.output_dir),
@@ -207,7 +240,8 @@ local function iwe_command(opts)
 
     local clients = vim.lsp.get_clients({ name = 'iwes' })
     table.insert(lines, string.format("  LSP Running: %s", #clients > 0 and "Yes" or "No"))
-    table.insert(lines, string.format("  Telescope Available: %s", telescope.is_available() and "Yes" or "No"))
+    table.insert(lines, string.format("  Picker Backend: %s", picker.get_backend() or "none"))
+    table.insert(lines, string.format("  Available Backends: %s", table.concat(picker.list_backends(), ", ")))
     table.insert(lines, string.format("  Preview Available: %s", preview.is_available() and "Yes" or "No"))
 
     -- Check for .iwe marker in current directory
@@ -220,7 +254,8 @@ local function iwe_command(opts)
     end
   else
     vim.notify(string.format("Unknown IWE command: %s", subcmd), vim.log.levels.ERROR)
-    vim.notify("Available commands: lsp, telescope, preview, init, info", vim.log.levels.INFO)
+    vim.notify("Available: find_files, paths, roots, grep, backlinks, headers, lsp, preview, init, info",
+      vim.log.levels.INFO)
   end
 end
 
@@ -235,7 +270,15 @@ local function complete_iwe_command(arg_lead, cmd_line, _)
 
   -- If we're completing the first argument after IWE
   if arg_count == 1 then
-    local subcommands = { 'lsp', 'telescope', 'tel', 'preview', 'prev', 'init', 'info' }
+    -- Include both picker commands and subcommand groups
+    local subcommands = {
+      -- Direct picker commands (new)
+      'find_files', 'paths', 'roots', 'grep', 'blockreferences', 'backlinks', 'headers',
+      -- Command groups
+      'lsp', 'preview', 'prev', 'init', 'info',
+      -- Deprecated (kept for backward compatibility)
+      'telescope', 'tel',
+    }
     return vim.tbl_filter(function(cmd)
       return cmd:find('^' .. vim.pesc(arg_lead))
     end, subcommands)

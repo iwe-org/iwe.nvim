@@ -92,18 +92,63 @@ local function check_configuration()
   health.info(string.format('Preview auto open: %s', config.preview.auto_open))
 end
 
----Check dependencies
-local function check_dependencies()
-  health.start('Dependencies')
+---Check picker backends
+local function check_picker_backends()
+  health.start('Picker Backends')
 
-  -- Check for Telescope (now a main dependency)
-  local telescope = require('iwe.telescope')
-  if telescope.is_available() then
-    health.ok('telescope.nvim plugin detected')
+  local picker = require('iwe.picker')
+  local config = require('iwe.config').get()
 
-    -- Check for Telescope extensions
-    local config = require('iwe.config').get()
-    for _, ext in ipairs(config.telescope.load_extensions) do
+  -- Show configured backend
+  local backend_config = config.picker and config.picker.backend or "auto"
+  if type(backend_config) == "function" then
+    health.info('Configured backend: custom function')
+  else
+    health.info(string.format('Configured backend: %s', backend_config))
+  end
+
+  -- Check available backends
+  local available = picker.list_backends()
+  if #available > 0 then
+    health.ok(string.format('Available backends: %s', table.concat(available, ", ")))
+  else
+    health.warn('No picker backends available', {
+      'Install telescope.nvim, fzf-lua, snacks.nvim, or mini.pick',
+      'vim.ui.select will be used as fallback for LSP-based pickers'
+    })
+  end
+
+  -- Show active backend
+  local active = picker.get_backend()
+  if active then
+    health.ok(string.format('Active backend: %s', active))
+  else
+    health.info('Active backend: vim.ui.select (fallback)')
+  end
+
+  -- Check individual backends
+  local backends = {
+    { name = "telescope", check = function() return pcall(require, 'telescope') end },
+    { name = "fzf-lua", check = function() return pcall(require, 'fzf-lua') end },
+    { name = "snacks", check = function()
+      local ok, snacks = pcall(require, 'snacks')
+      return ok and snacks.picker ~= nil
+    end },
+    { name = "mini.pick", check = function() return pcall(require, 'mini.pick') end },
+  }
+
+  for _, backend in ipairs(backends) do
+    if backend.check() then
+      health.ok(string.format('%s plugin detected', backend.name))
+    else
+      health.info(string.format('%s plugin not found (optional)', backend.name))
+    end
+  end
+
+  -- Check Telescope extensions if telescope is available
+  local has_telescope = pcall(require, 'telescope')
+  if has_telescope and config.telescope then
+    for _, ext in ipairs(config.telescope.load_extensions or {}) do
       local ok = pcall(require('telescope').load_extension, ext)
       if ok then
         health.ok(string.format('telescope extension "%s" available', ext))
@@ -111,12 +156,12 @@ local function check_dependencies()
         health.info(string.format('telescope extension "%s" not found (optional)', ext))
       end
     end
-  else
-    health.error('telescope.nvim plugin not found', {
-      'Install nvim-telescope/telescope.nvim',
-      'Telescope is required for IWE fuzzy finding functionality'
-    })
   end
+end
+
+---Check dependencies
+local function check_dependencies()
+  health.start('Dependencies')
 
   -- Check for RenderMarkdown plugin
   local has_render_markdown = pcall(require, 'render-markdown')
@@ -239,6 +284,7 @@ function M.check()
   check_lsp_server()
   check_project_structure()
   check_configuration()
+  check_picker_backends()
   check_dependencies()
   check_preview()
   check_lsp_status()

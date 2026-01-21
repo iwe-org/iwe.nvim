@@ -8,8 +8,9 @@ CONTENTS                                                          *iwe-contents*
 3. Configuration ........................... |iwe-configuration|
 4. Commands ................................ |iwe-commands|
 5. Key Mappings ............................ |iwe-mappings|
-6. Functions ............................... |iwe-functions|
-7. Health Checks ........................... |iwe-health|
+6. Picker Backends ......................... |iwe-picker|
+7. Functions ............................... |iwe-functions|
+8. Health Checks ........................... |iwe-health|
 
 ================================================================================
 INTRODUCTION                                                  *iwe-introduction*
@@ -28,7 +29,8 @@ This creates a `.iwe` marker directory that identifies the notes root.
 
 Features:~
 • LSP integration with iwes server for .iwe projects
-• Telescope integration for finding IWE files across projects
+• Multi-backend picker support (Telescope, fzf-lua, Snacks, mini.pick)
+• Automatic fallback to vim.ui.select for LSP-based pickers
 • Markdown-specific editing enhancements
 • Configurable key mappings via <Plug> system
 • Project initialization with :IWE init
@@ -41,14 +43,21 @@ The plugin requires the `iwes` LSP server to be installed and available in
 your PATH. Create a `.iwe` directory in your project root to enable LSP
 functionality.
 
-Required dependencies:
-• `nvim-telescope/telescope.nvim` for fuzzy finding functionality
+Optional picker dependencies (at least one recommended):
+• `nvim-telescope/telescope.nvim` - Full-featured fuzzy finder
+• `ibhagwan/fzf-lua` - Fast fzf-based picker
+• `folke/snacks.nvim` - Modern picker with good capabilities
+• `echasnovski/mini.pick` - Lightweight picker
 
 For enhanced functionality, the following optional dependencies are supported:
 • `render-markdown` plugin for enhanced display
 • `gitsigns` plugin for git integration
 • `nvim-telescope/telescope-ui-select.nvim` for UI selection
 • `xiyaowong/telescope-emoji.nvim` for emoji picker
+
+Note: If no picker is installed, LSP-based features (paths, roots, headers,
+blockreferences, backlinks) will fall back to `vim.ui.select`. File and grep
+pickers require a fuzzy finder.
 
 ================================================================================
 CONFIGURATION                                                *iwe-configuration*
@@ -63,10 +72,16 @@ The plugin can be configured by calling the setup function:
         auto_format_on_save = true
       },
       mappings = {
-        enable_default_mappings = true,
-        enable_telescope_keybindings = false,
+        enable_markdown_mappings = true,
+        enable_picker_keybindings = false,
+        enable_lsp_keybindings = false,
+        enable_preview_keybindings = false,
         leader = "<leader>",
         localleader = "<localleader>"
+      },
+      picker = {
+        backend = "auto",
+        fallback_notify = true
       },
       telescope = {
         enabled = true,
@@ -87,10 +102,14 @@ lsp.debounce_text_changes    Debounce time for text changes (ms)
 lsp.auto_format_on_save      Enable automatic formatting on save
 
 mappings.enable_markdown_mappings   Enable core markdown editing key mappings
-mappings.enable_telescope_keybindings Enable telescope keybindings (gf, gs, ga, etc.)
-mappings.enable_lsp_keybindings     Enable IWE-specific LSP keybindings (<leader>e, <leader>i, etc.)
+mappings.enable_picker_keybindings  Enable picker keybindings (gf, gs, ga, etc.)
+mappings.enable_lsp_keybindings     Enable IWE-specific LSP keybindings
 mappings.leader                     Leader key for mappings
 mappings.localleader               Local leader key for mappings
+
+picker.backend          Backend to use: "auto", "telescope", "fzf_lua",
+                        "snacks", "mini", "vim_ui", or a custom function
+picker.fallback_notify  Notify when falling back to another backend
 
 telescope.enabled               Enable Telescope integration
 telescope.setup_config          Auto-setup Telescope configuration
@@ -102,19 +121,25 @@ COMMANDS                                                          *iwe-commands*
                                                                           *:IWE*
 :IWE {subcommand}       Main IWE command with subcommands
 
+    Picker commands (use configured backend):~
+    find_files         Find files in project
+    paths              Workspace symbols (LSP)
+    roots              Namespace symbols (LSP)
+    grep               Live grep search
+    blockreferences    LSP references (no declaration)
+    backlinks          LSP references (with declaration)
+    headers            Document symbols (LSP)
+
+    Other commands:~
     init               Initialize IWE project in current directory
-
-    lsp {action}        Control LSP server
-                        Actions: start, stop, restart, status
-
-    telescope {action} Control Telescope pickers
-                        Actions: find_files, paths, roots, grep, blockreferences,
-                        backlinks, headers, setup
-
+    lsp {action}       Control LSP server
+                        Actions: start, stop, restart, status, toggle_inlay_hints
     preview {action}   Generate previews using IWE CLI
                         Actions: squash, export, export-headers, export-workspace
-
     info               Show plugin configuration and status
+
+    Deprecated:~
+    telescope {action} (Use direct commands instead)
 
 
 ================================================================================
@@ -140,14 +165,14 @@ Visual mode in markdown files:
 Global (Neovide only):
   `<D-l>`           <Plug>(iwe-lsp-start)
 
-Telescope keybindings (when enable_telescope_keybindings = true):
-  `gf`              <Plug>(iwe-telescope-find-files)
-  `gs`              <Plug>(iwe-telescope-paths)
-  `ga`              <Plug>(iwe-telescope-roots)
-  `g/`              <Plug>(iwe-telescope-grep)
-  `gb`              <Plug>(iwe-telescope-blockreferences)
-  `gR`              <Plug>(iwe-telescope-backlinks)
-  `go`              <Plug>(iwe-telescope-headers)
+Picker keybindings (when enable_picker_keybindings = true):
+  `gf`              <Plug>(iwe-picker-find-files)
+  `gs`              <Plug>(iwe-picker-paths)
+  `ga`              <Plug>(iwe-picker-roots)
+  `g/`              <Plug>(iwe-picker-grep)
+  `gb`              <Plug>(iwe-picker-blockreferences)
+  `gR`              <Plug>(iwe-picker-backlinks)
+  `go`              <Plug>(iwe-picker-headers)
 
 IWE LSP keybindings (when enable_lsp_keybindings = true):
   `<leader>h`       <Plug>(iwe-lsp-rewrite-list-section)
@@ -161,7 +186,7 @@ Preview keybindings (when enable_preview_keybindings = true):
 
 Default Neovim LSP keybindings (available when LSP is active):
   `gD`              Go to declaration
-  `gd`              Go to definition  
+  `gd`              Go to definition
   `gi`              Go to implementation
   `gr`              Show references
   `K`               Show hover documentation
@@ -180,13 +205,17 @@ Available <Plug> Mappings:~
 *<Plug>(iwe-insert-date)*          Insert current date
 *<Plug>(iwe-insert-week)*          Insert current week
 *<Plug>(iwe-lsp-start)*            Manually start IWE LSP server
-*<Plug>(iwe-telescope-find-files)* Find files (gf equivalent)
-*<Plug>(iwe-telescope-paths)*      Workspace symbols - paths (gs equivalent)
-*<Plug>(iwe-telescope-roots)*      Namespace symbols - roots (ga equivalent)
-*<Plug>(iwe-telescope-grep)*       Live grep search (g/ equivalent)
-*<Plug>(iwe-telescope-blockreferences)* LSP references - blockreferences (gb equivalent)
-*<Plug>(iwe-telescope-backlinks)*  LSP references - backlinks (gR equivalent)
-*<Plug>(iwe-telescope-headers)*    Document symbols - headers (go equivalent)
+
+Picker mappings (backend-agnostic):
+*<Plug>(iwe-picker-find-files)*    Find files (gf equivalent)
+*<Plug>(iwe-picker-paths)*         Workspace symbols - paths (gs equivalent)
+*<Plug>(iwe-picker-roots)*         Namespace symbols - roots (ga equivalent)
+*<Plug>(iwe-picker-grep)*          Live grep search (g/ equivalent)
+*<Plug>(iwe-picker-blockreferences)* LSP references - blockreferences (gb equiv)
+*<Plug>(iwe-picker-backlinks)*     LSP references - backlinks (gR equivalent)
+*<Plug>(iwe-picker-headers)*       Document symbols - headers (go equivalent)
+
+LSP mappings:
 *<Plug>(iwe-lsp-extract-section)*  Extract section (refactor)
 *<Plug>(iwe-lsp-inline-reference)* Inline reference (refactor)
 *<Plug>(iwe-lsp-rewrite-list-section)* Rewrite list section (refactor)
@@ -194,10 +223,77 @@ Available <Plug> Mappings:~
 *<Plug>(iwe-lsp-toggle-inlay-hints)* Toggle inlay hints
 *<Plug>(iwe-lsp-go-to-definition)* Go to definition
 *<Plug>(iwe-lsp-link)*             Create link from selection (visual mode)
+
+Preview mappings:
 *<Plug>(iwe-preview-squash)*       Generate squash markdown preview
 *<Plug>(iwe-preview-export)*       Generate export graph preview
 *<Plug>(iwe-preview-export-headers)* Generate export graph with headers preview
 *<Plug>(iwe-preview-export-workspace)* Generate workspace graph preview
+
+Deprecated mappings (still work for backward compatibility):
+*<Plug>(iwe-telescope-find-files)* → Use <Plug>(iwe-picker-find-files)
+*<Plug>(iwe-telescope-paths)*      → Use <Plug>(iwe-picker-paths)
+*<Plug>(iwe-telescope-roots)*      → Use <Plug>(iwe-picker-roots)
+*<Plug>(iwe-telescope-grep)*       → Use <Plug>(iwe-picker-grep)
+*<Plug>(iwe-telescope-blockreferences)* → Use <Plug>(iwe-picker-blockreferences)
+*<Plug>(iwe-telescope-backlinks)*  → Use <Plug>(iwe-picker-backlinks)
+*<Plug>(iwe-telescope-headers)*    → Use <Plug>(iwe-picker-headers)
+
+================================================================================
+PICKER BACKENDS                                                    *iwe-picker*
+
+The plugin supports multiple picker backends for fuzzy finding functionality.
+The backend can be configured via `picker.backend` in setup.
+
+Available backends:~
+• "telescope" - nvim-telescope/telescope.nvim (default priority 1)
+• "fzf_lua"   - ibhagwan/fzf-lua (priority 2)
+• "snacks"    - folke/snacks.nvim (priority 3)
+• "mini"      - echasnovski/mini.pick (priority 4)
+• "vim_ui"    - vim.ui.select fallback (always available)
+• "auto"      - Automatically detect best available (default)
+
+Custom backend:~
+
+You can provide a custom function as the backend:
+>lua
+    require('iwe').setup({
+      picker = {
+        backend = function(action, opts)
+          -- action: "find_files", "grep", "lsp_workspace_symbols",
+          --         "lsp_document_symbols", "lsp_references"
+          -- opts: table with action-specific options
+          -- Implement your custom picker logic here
+        end
+      }
+    })
+<
+
+Picker API:~
+
+The picker module can be used directly:
+>lua
+    local picker = require('iwe.picker')
+
+    picker.find_files()        -- File picker
+    picker.grep()              -- Live grep
+    picker.paths()             -- Workspace symbols
+    picker.roots()             -- Namespace symbols
+    picker.headers()           -- Document symbols
+    picker.blockreferences()   -- LSP references (no declaration)
+    picker.backlinks()         -- LSP references (with declaration)
+
+    picker.is_available()      -- Check if any picker available
+    picker.get_backend()       -- Get current backend name
+    picker.list_backends()     -- List all available backends
+<
+
+Fallback behavior:~
+
+When using `vim.ui.select` as fallback:
+• LSP-based pickers work via direct LSP calls
+• File pickers show a message suggesting `:edit` or fuzzy finder installation
+• Grep shows a message suggesting `:vimgrep` or fuzzy finder installation
 
 ================================================================================
 FUNCTIONS                                                        *iwe-functions*
@@ -220,26 +316,39 @@ require('iwe').lsp_available()                            *iwe.lsp_available()*
 require('iwe').get_config()                                *iwe.get_config()*
     Get the current plugin configuration.
 
-require('iwe.telescope').pickers.find_files()        *iwe.telescope.pickers*
-    Launch Telescope find files picker (gf equivalent).
+Picker functions:~
 
-require('iwe.telescope').pickers.paths()             *iwe.telescope.paths*
+require('iwe.picker').find_files()                    *iwe.picker.find_files*
+    Launch file picker (gf equivalent).
+
+require('iwe.picker').paths()                              *iwe.picker.paths*
     Launch workspace symbols picker - paths (gs equivalent).
 
-require('iwe.telescope').pickers.roots()             *iwe.telescope.roots*
+require('iwe.picker').roots()                              *iwe.picker.roots*
     Launch namespace symbols picker - roots (ga equivalent).
 
-require('iwe.telescope').pickers.grep()              *iwe.telescope.grep*
+require('iwe.picker').grep()                                *iwe.picker.grep*
     Launch live grep picker (g/ equivalent).
 
-require('iwe.telescope').pickers.blockreferences()    *iwe.telescope.blockreferences*
+require('iwe.picker').blockreferences()          *iwe.picker.blockreferences*
     Launch LSP references picker - blockreferences (gb equivalent).
 
-require('iwe.telescope').pickers.backlinks()         *iwe.telescope.backlinks*
+require('iwe.picker').backlinks()                      *iwe.picker.backlinks*
     Launch LSP references picker - backlinks (gR equivalent).
 
-require('iwe.telescope').pickers.headers()           *iwe.telescope.headers*
+require('iwe.picker').headers()                          *iwe.picker.headers*
     Launch document symbols picker - headers (go equivalent).
+
+require('iwe.picker').is_available()                *iwe.picker.is_available*
+    Check if any picker backend is available.
+
+require('iwe.picker').get_backend()                  *iwe.picker.get_backend*
+    Get the name of the current picker backend.
+
+require('iwe.picker').list_backends()              *iwe.picker.list_backends*
+    List all available picker backends.
+
+Preview functions:~
 
 require('iwe.preview').generate_squash_preview()      *iwe.preview.squash*
     Generate squashed markdown preview using iwe CLI.
@@ -253,6 +362,11 @@ require('iwe.preview').generate_export_headers_preview() *iwe.preview.export-hea
 require('iwe.preview').generate_export_workspace_preview() *iwe.preview.export-workspace*
     Generate full workspace graph as SVG using iwe CLI.
 
+Deprecated (use iwe.picker instead):~
+
+require('iwe.telescope').pickers.find_files()        *iwe.telescope.pickers*
+    Deprecated. Use require('iwe.picker').find_files() instead.
+
 
 ================================================================================
 HEALTH CHECKS                                                      *iwe-health*
@@ -265,9 +379,9 @@ Use |:checkhealth| to diagnose plugin issues:
 The health check verifies:
 • iwes LSP server availability
 • .iwe project marker existence
-• Configuration path validity
-• Telescope availability and extensions
-• Optional dependencies
+• Configuration validity
+• Picker backend availability and status
+• Optional dependencies (render-markdown, gitsigns)
 • Preview functionality (iwe CLI and Graphviz)
 • Current LSP server status
 
