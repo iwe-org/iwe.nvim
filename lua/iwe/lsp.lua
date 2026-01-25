@@ -52,8 +52,6 @@ end
 
 ---Setup LSP autocommands
 function M.setup_autocmds()
-  local opts = config.get()
-
   -- Auto-start LSP for markdown files with .iwe marker
   vim.api.nvim_create_autocmd('FileType', {
     pattern = 'markdown',
@@ -70,6 +68,7 @@ function M.setup_autocmds()
   vim.api.nvim_create_autocmd("LspAttach", {
     group = vim.api.nvim_create_augroup("IWE_LSP_Attach", { clear = true }),
     callback = function(args)
+      local opts = config.get()  -- Get fresh config on each attach
       local client = vim.lsp.get_client_by_id(args.data.client_id)
       if client and client.name == opts.lsp.name then
         -- Enable inlay hints if configured and supported
