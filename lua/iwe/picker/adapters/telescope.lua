@@ -51,6 +51,44 @@ function M.grep(opts)
   }, opts))
 end
 
+local function make_lsp_symbol_entry_maker(opts)
+  local entry_display = require("telescope.pickers.entry_display")
+
+  opts = opts or {}
+  local displayer = entry_display.create({
+    separator = " ",
+    items = {
+      { width = opts.symbol_width or 100 },
+    },
+  })
+
+  local make_display = function(entry)
+    return displayer({
+      entry.symbol_name,
+    })
+  end
+
+  return function(entry)
+    if not entry then
+      return nil
+    end
+
+    local symbol_type, symbol_name = entry.text:match("%[(.+)%]%s+(.*)")
+    symbol_name = symbol_name or entry.text
+
+    return {
+      value = entry,
+      ordinal = symbol_name .. " " .. (symbol_type or ""),
+      display = make_display,
+      filename = entry.filename,
+      lnum = entry.lnum,
+      col = entry.col,
+      symbol_name = symbol_name,
+      symbol_type = symbol_type,
+    }
+  end
+end
+
 ---LSP workspace symbols with Telescope
 ---@param opts? table Options (symbols: string[] for filtering, prompt_title: string)
 function M.lsp_workspace_symbols(opts)
@@ -60,12 +98,10 @@ function M.lsp_workspace_symbols(opts)
   end
 
   opts = opts or {}
-  require("telescope.builtin").lsp_dynamic_workspace_symbols(vim.tbl_extend("force", {
+  local picker_opts = vim.tbl_extend("force", {
     prompt_title = opts.prompt_title or "Workspace Symbols",
     fname_width = 0,
     symbol_width = 100,
-    symbol_type_width = 0,
-    symbol_line = false,
     layout_config = {
       horizontal = {
         preview_width = 0.5,
@@ -73,7 +109,10 @@ function M.lsp_workspace_symbols(opts)
         height = 0.9,
       },
     },
-  }, opts))
+  }, opts)
+
+  picker_opts.entry_maker = make_lsp_symbol_entry_maker(picker_opts)
+  require("telescope.builtin").lsp_dynamic_workspace_symbols(picker_opts)
 end
 
 ---LSP document symbols with Telescope

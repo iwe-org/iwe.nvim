@@ -92,7 +92,6 @@ function M.setup()
       lsp_document_symbols = {
         fname_width = 0,
         symbol_width = 100,
-        symbol_type_width = 0,
         symbol_line = false,
         layout_config = {
           horizontal = {
@@ -106,7 +105,6 @@ function M.setup()
       lsp_workspace_symbols = {
         fname_width = 0,
         symbol_width = 100,
-        symbol_type_width = 0,
         symbol_line = false,
         layout_config = {
           horizontal = {
@@ -119,7 +117,6 @@ function M.setup()
       lsp_dynamic_workspace_symbols = {
         fname_width = 0,
         symbol_width = 100,
-        symbol_type_width = 0,
         symbol_line = false,
         layout_config = {
           horizontal = {
