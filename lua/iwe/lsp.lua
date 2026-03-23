@@ -76,6 +76,15 @@ function M.setup_autocmds()
           vim.lsp.inlay_hint.enable(true, { bufnr = args.buf })
         end
 
+        -- Enable LSP-based folding if configured
+        if opts.lsp.enable_folding then
+          for _, win in ipairs(vim.fn.win_findbuf(args.buf)) do
+            vim.wo[win].foldmethod = 'expr'
+            vim.wo[win].foldexpr = 'v:lua.vim.lsp.foldexpr()'
+            vim.wo[win].foldtext = 'v:lua.vim.lsp.foldtext()'
+          end
+        end
+
         -- Setup auto-formatting on save if enabled
         if opts.lsp.auto_format_on_save then
           vim.api.nvim_create_autocmd("BufWritePre", {

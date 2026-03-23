@@ -12,6 +12,7 @@
 ---@field debounce_text_changes number Debounce time for text changes
 ---@field auto_format_on_save boolean Whether to format on save
 ---@field enable_inlay_hints boolean Whether to enable inlay hints
+---@field enable_folding boolean Whether to enable LSP-based folding
 
 ---@class IWE.Config.Mappings
 ---@field enable_markdown_mappings boolean Whether to enable core markdown editing key mappings
@@ -45,7 +46,8 @@ M.defaults = {
     name = "iwes",
     debounce_text_changes = 500,
     auto_format_on_save = true,
-    enable_inlay_hints = true
+    enable_inlay_hints = true,
+    enable_folding = true
   },
   mappings = {
     enable_markdown_mappings = true,
