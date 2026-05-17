@@ -287,6 +287,12 @@ Run `:checkhealth iwe` to diagnose any issues with:
 - Dependencies
 - Preview functionality (IWE CLI and Graphviz)
 
+## Alternatives
+
+You can also use IWE alongside alternative Neovim plugins such as:
+
+- [`ymic9963/mdnotes.nvim`](https://github.com/ymic9963/mdnotes.nvim) — a lightweight markdown note-taking plugin focused on in-buffer editing helpers (wikilinks, tables, journals, ToC). IWE complements it with graph-aware refactoring and project-wide navigation powered by the `iwes` server.
+
 ## Contributing
 
 This plugin follows modern Neovim development practices with full type safety, comprehensive documentation, and health checks. See `:help iwe` for complete documentation.
