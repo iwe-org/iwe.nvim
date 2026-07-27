@@ -35,6 +35,75 @@ describe('IWE LSP', function()
 
       assert.are.equal(#autocmds, 1)
     end)
+
+    -- Creates a loaded buffer named root/<name> with the given filetype,
+    -- without firing autocmds (the built-in markdown ftplugin needs a
+    -- treesitter parser that is not available in the test environment)
+    local function preloaded_buffer(root, name, filetype)
+      local bufnr = vim.api.nvim_create_buf(true, false)
+      local eventignore = vim.o.eventignore
+      vim.o.eventignore = 'all'
+      vim.api.nvim_buf_set_name(bufnr, root .. '/' .. name)
+      vim.bo[bufnr].filetype = filetype
+      vim.o.eventignore = eventignore
+      return bufnr
+    end
+
+    local function collect_started_buffers()
+      local started = {}
+      local original_start = lsp.start
+      lsp.start = function(buf)
+        table.insert(started, buf)
+      end
+      lsp.setup_autocmds()
+      lsp.start = original_start
+      return started
+    end
+
+    it('should start LSP for markdown buffers loaded before setup', function()
+      config.setup()
+
+      local root = vim.fn.tempname()
+      vim.fn.mkdir(root .. '/.iwe', 'p')
+      local bufnr = preloaded_buffer(root, 'note.md', 'markdown')
+
+      local started = collect_started_buffers()
+
+      assert.are.same({ bufnr }, started)
+
+      vim.api.nvim_buf_delete(bufnr, { force = true })
+      vim.fn.delete(root, 'rf')
+    end)
+
+    it('should not start LSP for pre-loaded markdown buffers outside an .iwe project', function()
+      config.setup()
+
+      local root = vim.fn.tempname()
+      vim.fn.mkdir(root, 'p')
+      local bufnr = preloaded_buffer(root, 'note.md', 'markdown')
+
+      local started = collect_started_buffers()
+
+      assert.are.same({}, started)
+
+      vim.api.nvim_buf_delete(bufnr, { force = true })
+      vim.fn.delete(root, 'rf')
+    end)
+
+    it('should not start LSP for pre-loaded non-markdown buffers', function()
+      config.setup()
+
+      local root = vim.fn.tempname()
+      vim.fn.mkdir(root .. '/.iwe', 'p')
+      local bufnr = preloaded_buffer(root, 'note.txt', 'text')
+
+      local started = collect_started_buffers()
+
+      assert.are.same({}, started)
+
+      vim.api.nvim_buf_delete(bufnr, { force = true })
+      vim.fn.delete(root, 'rf')
+    end)
   end)
 
   describe('auto_format_on_save configuration', function()

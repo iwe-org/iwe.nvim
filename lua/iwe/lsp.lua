@@ -64,6 +64,17 @@ function M.setup_autocmds()
     desc = 'Start IWE LSP server for markdown files'
   })
 
+  -- Catch up on markdown buffers loaded before the autocmd existed, e.g. the
+  -- file the editor was opened with when setup runs at or after VimEnter
+  -- (FileType for the initial buffer fires before VimEnter)
+  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.api.nvim_buf_is_loaded(buf)
+      and vim.bo[buf].filetype == 'markdown'
+      and vim.fs.root(buf, {'.iwe'}) then
+      M.start(buf)
+    end
+  end
+
   -- Setup LSP attach behavior
   vim.api.nvim_create_autocmd("LspAttach", {
     group = vim.api.nvim_create_augroup("IWE_LSP_Attach", { clear = true }),

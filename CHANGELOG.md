@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Auto-initialization now actually works without an explicit `require('iwe').setup()` call: the bootstrap hook moved into `plugin/iwe.lua`, which Neovim sources automatically (previously it lived inside the `iwe` module that nothing loaded, so the plugin stayed inert without a manual setup call).
+- The LSP server now starts for markdown buffers that were opened before the plugin initialized — in particular the file the editor was launched with, which fires its `FileType` event before `VimEnter`-time or lazy-loaded setup registers the autostart autocmd.
+
 ## [1.0.0] - 2024-12-23
 
 ### Added

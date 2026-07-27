@@ -5,12 +5,6 @@ local M = {}
 -- Lazy-loaded modules
 local config = require('iwe.config')
 
----Check if the plugin is properly initialized
----@return boolean
-local function is_initialized()
-  return next(config.get()) ~= nil
-end
-
 ---Setup the IWE plugin
 ---@param opts? IWE.Config User configuration options
 function M.setup(opts)
@@ -62,19 +56,5 @@ function M.lsp_available()
   return require('iwe.lsp').is_available()
 end
 
-
--- Auto-initialization without requiring setup() call
--- This provides smart defaults while still allowing customization
-vim.api.nvim_create_autocmd('VimEnter', {
-  callback = function()
-    -- Only auto-initialize if user hasn't called setup() explicitly
-    if not is_initialized() then
-      M.setup({})
-    end
-  end,
-  once = true,
-  group = vim.api.nvim_create_augroup('IWE_AutoInit', { clear = true }),
-  desc = 'Auto-initialize IWE plugin with defaults'
-})
 
 return M
