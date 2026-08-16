@@ -44,12 +44,12 @@ describe('plugin entry point', function()
 
   it('should not override an existing configuration', function()
     config.options = {}
-    require('iwe').setup({ lsp = { name = 'custom-iwes' } })
+    require('iwe').setup({ mappings = { enable_markdown_mappings = false } })
 
     vim.cmd('source ' .. vim.fn.fnameescape(plugin_file))
     fire_pending_auto_init()
 
-    assert.are.equal('custom-iwes', config.get().lsp.name)
+    assert.are.equal(false, config.get().mappings.enable_markdown_mappings)
   end)
 
   it('should not load when disabled', function()

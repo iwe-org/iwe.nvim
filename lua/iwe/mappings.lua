@@ -46,14 +46,6 @@ function M.setup_plug_mappings()
 
 
 
-  -- Manual LSP start
-  create_plug_mapping('lsp-start', function()
-    require('iwe.lsp').start()
-  end, 'n', {
-    silent = true,
-    desc = 'Manually start IWE LSP server'
-  })
-
   -- Picker mappings (new, backend-agnostic)
   create_plug_mapping('picker-find-files', function()
     require('iwe.picker').find_files()
@@ -171,13 +163,6 @@ function M.setup_plug_mappings()
     desc = 'Rewrite section list (refactor)'
   })
 
-  create_plug_mapping('lsp-toggle-inlay-hints', function()
-    require('iwe.lsp').toggle_inlay_hints()
-  end, 'n', {
-    silent = true,
-    desc = 'Toggle inlay hints'
-  })
-
   create_plug_mapping('lsp-go-to-definition', function()
     vim.lsp.buf.definition()
   end, 'n', {
@@ -251,14 +236,6 @@ function M.setup_markdown_mappings()
     group = vim.api.nvim_create_augroup('IWE_MarkdownMappings', { clear = true }),
     desc = 'Setup IWE markdown mappings for markdown files'
   })
-
-  -- Manual LSP start mapping (Neovide only)
-  if vim.g.neovide then
-    vim.keymap.set('n', '<D-l>', '<Plug>(iwe-lsp-start)', {
-      silent = true,
-      desc = 'Manually start IWE LSP server'
-    })
-  end
 end
 
 return M

@@ -1,18 +1,9 @@
 ---@class IWE.Config
----@field lsp IWE.Config.LSP LSP server configuration
 ---@field mappings IWE.Config.Mappings Key mapping configuration
 ---@field picker IWE.Config.Picker Picker backend configuration
 ---@field telescope IWE.Config.Telescope Telescope integration configuration (deprecated, use picker)
 ---@field preview IWE.Config.Preview Preview generation configuration
 
-
----@class IWE.Config.LSP
----@field cmd string[] Command to start the LSP server
----@field name string Name of the LSP server
----@field debounce_text_changes number Debounce time for text changes
----@field auto_format_on_save boolean Whether to format on save
----@field enable_inlay_hints boolean Whether to enable inlay hints
----@field enable_folding boolean Whether to enable LSP-based folding
 
 ---@class IWE.Config.Mappings
 ---@field enable_markdown_mappings boolean Whether to enable core markdown editing key mappings
@@ -41,14 +32,6 @@ local M = {}
 
 ---@type IWE.Config
 M.defaults = {
-  lsp = {
-    cmd = { "iwes" },
-    name = "iwes",
-    debounce_text_changes = 500,
-    auto_format_on_save = true,
-    enable_inlay_hints = true,
-    enable_folding = true
-  },
   mappings = {
     enable_markdown_mappings = true,
     enable_picker_keybindings = false,
@@ -82,18 +65,6 @@ M.options = {}
 ---@return boolean success
 ---@return string? error
 local function validate_config(opts)
-  if opts.lsp then
-    if opts.lsp.cmd and type(opts.lsp.cmd) ~= "table" then
-      return false, "lsp.cmd must be an array"
-    end
-    if opts.lsp.name and type(opts.lsp.name) ~= "string" then
-      return false, "lsp.name must be a string"
-    end
-    if opts.lsp.debounce_text_changes and type(opts.lsp.debounce_text_changes) ~= "number" then
-      return false, "lsp.debounce_text_changes must be a number"
-    end
-  end
-
   if opts.telescope then
     if opts.telescope.enabled ~= nil and type(opts.telescope.enabled) ~= "boolean" then
       return false, "telescope.enabled must be a boolean"
@@ -142,6 +113,16 @@ end
 ---@param opts? IWE.Config User configuration options
 function M.setup(opts)
   opts = opts or {}
+
+  if opts.lsp ~= nil then
+    opts = vim.tbl_extend("force", {}, opts)
+    opts.lsp = nil
+    vim.notify(
+      "iwe.nvim: the `lsp` setup options were removed. The server is now configured"
+        .. " via lsp/iwes.lua and Neovim's vim.lsp. See :help iwe-lsp-migration",
+      vim.log.levels.WARN
+    )
+  end
 
   local success, err = validate_config(opts)
   if not success then

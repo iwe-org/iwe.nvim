@@ -3,6 +3,21 @@ local M = {}
 
 local health = vim.health or require('health')
 
+---Check Neovim version requirements
+local function check_nvim_version()
+  health.start('Neovim Version')
+
+  if vim.fn.has('nvim-0.11.2') == 1 then
+    health.ok(string.format('Neovim %s (0.11.2+ required for LSP integration)',
+      tostring(vim.version())))
+  else
+    health.error('Neovim 0.11.2 or later is required for LSP integration', {
+      'Upgrade Neovim to 0.11.2 or later',
+      'The iwes server is enabled via vim.lsp.enable(), which needs 0.11.2+',
+    })
+  end
+end
+
 ---Check if iwes LSP server is available
 local function check_lsp_server()
   health.start('IWE LSP Server')
@@ -66,12 +81,6 @@ local function check_configuration()
   health.start('Configuration')
 
   local config = require('iwe.config').get()
-
-  -- Check LSP configuration
-  health.info(string.format('LSP command: %s', table.concat(config.lsp.cmd, ' ')))
-  health.info(string.format('LSP name: %s', config.lsp.name))
-  health.info(string.format('Auto format on save: %s', config.lsp.auto_format_on_save))
-  health.info(string.format('Debounce text changes: %dms', config.lsp.debounce_text_changes))
 
   -- Check mapping configuration
   health.info(string.format('Markdown mappings enabled: %s', config.mappings.enable_markdown_mappings))
@@ -281,6 +290,7 @@ end
 
 ---Run all health checks
 function M.check()
+  check_nvim_version()
   check_lsp_server()
   check_project_structure()
   check_configuration()

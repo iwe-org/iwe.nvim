@@ -19,9 +19,6 @@ vim.opt.writebackup = false
 -- Load the plugin
 require('iwe').setup({
   -- Test configuration
-  lsp = {
-    cmd = { 'echo', 'mock-iwes' }, -- Mock iwes command for testing
-  },
   mappings = {
     enable_markdown_mappings = true,
     enable_picker_keybindings = false,

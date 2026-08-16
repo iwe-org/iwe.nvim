@@ -15,8 +15,17 @@ function M.setup(opts)
   require('iwe.commands').setup()
   require('iwe.mappings').setup_plug_mappings()
 
-  -- Setup components that can be loaded immediately
-  require('iwe.lsp').setup_autocmds()
+  -- Enable the IWE LSP server via Neovim's built-in config (lsp/iwes.lua).
+  -- Attaches automatically to markdown buffers inside a `.iwe` project.
+  if vim.fn.has('nvim-0.11.2') == 1 then
+    vim.lsp.enable('iwes')
+  else
+    vim.notify(
+      'iwe.nvim: LSP integration requires Neovim 0.11.2 or later',
+      vim.log.levels.WARN
+    )
+  end
+
   require('iwe.mappings').setup_markdown_mappings()
 
   -- Setup Telescope integration if enabled
@@ -43,18 +52,5 @@ end
 function M.is_in_project()
   return M.get_project_root() ~= nil
 end
-
----Start the LSP server
----@param bufnr? number Buffer number (optional)
-function M.start_lsp(bufnr)
-  require('iwe.lsp').start(bufnr)
-end
-
----Check if LSP server is available
----@return boolean
-function M.lsp_available()
-  return require('iwe.lsp').is_available()
-end
-
 
 return M

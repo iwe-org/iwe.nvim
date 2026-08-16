@@ -6,11 +6,12 @@ CONTENTS                                                          *iwe-contents*
 1. Introduction ............................ |iwe-introduction|
 2. Installation ............................ |iwe-installation|
 3. Configuration ........................... |iwe-configuration|
-4. Commands ................................ |iwe-commands|
-5. Key Mappings ............................ |iwe-mappings|
-6. Picker Backends ......................... |iwe-picker|
-7. Functions ............................... |iwe-functions|
-8. Health Checks ........................... |iwe-health|
+4. LSP Migration ........................... |iwe-lsp-migration|
+5. Commands ................................ |iwe-commands|
+6. Key Mappings ............................ |iwe-mappings|
+7. Picker Backends ......................... |iwe-picker|
+8. Functions ............................... |iwe-functions|
+9. Health Checks ........................... |iwe-health|
 
 ================================================================================
 INTRODUCTION                                                  *iwe-introduction*
@@ -39,9 +40,13 @@ Features:~
 ================================================================================
 INSTALLATION                                                  *iwe-installation*
 
-The plugin requires the `iwes` LSP server to be installed and available in
-your PATH. Create a `.iwe` directory in your project root to enable LSP
-functionality.
+The plugin requires Neovim 0.11.2 or later and the `iwes` LSP server to be
+installed and available in your PATH. Create a `.iwe` directory in your
+project root to enable LSP functionality. The server config is provided by
+`lsp/iwes.lua` and the plugin enables it automatically via
+|vim.lsp.enable()|. Manage it with `vim.lsp.enable('iwes')` /
+`vim.lsp.enable('iwes', false)`, or — on Neovim 0.12+ — the built-in |:lsp|
+commands (`:lsp enable iwes`, `:lsp disable iwes`, `:lsp restart`).
 
 Optional picker dependencies (at least one recommended):
 • `nvim-telescope/telescope.nvim` - Full-featured fuzzy finder
@@ -65,12 +70,6 @@ CONFIGURATION                                                *iwe-configuration*
 The plugin can be configured by calling the setup function:
 >lua
     require('iwe').setup({
-      lsp = {
-        cmd = { "iwes" },
-        name = "iwes",
-        debounce_text_changes = 500,
-        auto_format_on_save = true
-      },
       mappings = {
         enable_markdown_mappings = true,
         enable_picker_keybindings = false,
@@ -96,11 +95,6 @@ Configuration Options:~
 *g:disable_iwe*         Disable the IWE plugin entirely
 *g:loaded_iwe*          Indicates the plugin has been loaded
 
-lsp.cmd                 Command to start LSP server
-lsp.name                Name of the LSP server
-lsp.debounce_text_changes    Debounce time for text changes (ms)
-lsp.auto_format_on_save      Enable automatic formatting on save
-
 mappings.enable_markdown_mappings   Enable core markdown editing key mappings
 mappings.enable_picker_keybindings  Enable picker keybindings (gf, gs, ga, etc.)
 mappings.enable_lsp_keybindings     Enable IWE-specific LSP keybindings
@@ -115,6 +109,45 @@ telescope.enabled               Enable Telescope integration
 telescope.setup_config          Auto-setup Telescope configuration
 telescope.load_extensions       Extensions to load automatically
 
+================================================================================
+LSP MIGRATION                                                *iwe-lsp-migration*
+
+Earlier versions accepted an `lsp` table in `setup()` (`cmd`,
+`auto_format_on_save`, `enable_inlay_hints`, `enable_folding`,
+`debounce_text_changes`). These options were removed; passing `lsp = { ... }`
+shows a warning and has no effect. The server is configured in `lsp/iwes.lua`
+and managed by Neovim's built-in LSP client. The equivalents are standard
+Neovim configuration:
+
+Format on save (or use a plugin such as conform.nvim): >lua
+    vim.api.nvim_create_autocmd('LspAttach', {
+      callback = function(args)
+        local client = vim.lsp.get_client_by_id(args.data.client_id)
+        if client and client.name == 'iwes' then
+          vim.api.nvim_create_autocmd('BufWritePre', {
+            buffer = args.buf,
+            callback = function()
+              vim.lsp.buf.format({ async = false, bufnr = args.buf })
+            end,
+          })
+        end
+      end,
+    })
+<
+LSP-based folding (or use a plugin such as nvim-origami): >lua
+    vim.o.foldmethod = 'expr'
+    vim.o.foldexpr = 'v:lua.vim.lsp.foldexpr()'
+    vim.o.foldtext = 'v:lua.vim.lsp.foldtext()'
+<
+Inlay hints (see |vim.lsp.inlay_hint.enable()|): >lua
+    vim.lsp.inlay_hint.enable(true)
+<
+Server command or flags (extends `lsp/iwes.lua`, see |vim.lsp.config()|): >lua
+    vim.lsp.config('iwes', {
+      cmd = { '/path/to/iwes' },
+      flags = { debounce_text_changes = 500 },
+    })
+<
 ================================================================================
 COMMANDS                                                          *iwe-commands*
 
@@ -132,8 +165,6 @@ COMMANDS                                                          *iwe-commands*
 
     Other commands:~
     init               Initialize IWE project in current directory
-    lsp {action}       Control LSP server
-                        Actions: start, stop, restart, status, toggle_inlay_hints
     preview {action}   Generate previews using IWE CLI
                         Actions: squash, export, export-headers, export-workspace
     info               Show plugin configuration and status
@@ -162,9 +193,6 @@ Insert mode in markdown files:
 Visual mode in markdown files:
   `<CR>`            <Plug>(iwe-lsp-link)
 
-Global (Neovide only):
-  `<D-l>`           <Plug>(iwe-lsp-start)
-
 Picker keybindings (when enable_picker_keybindings = true):
   `gf`              <Plug>(iwe-picker-find-files)
   `gs`              <Plug>(iwe-picker-paths)
@@ -184,19 +212,6 @@ Preview keybindings (when enable_preview_keybindings = true):
   `<leader>ph`      <Plug>(iwe-preview-export-headers)
   `<leader>pw`      <Plug>(iwe-preview-export-workspace)
 
-Default Neovim LSP keybindings (available when LSP is active):
-  `gD`              Go to declaration
-  `gd`              Go to definition
-  `gi`              Go to implementation
-  `gr`              Show references
-  `K`               Show hover documentation
-  `<C-k>`           Show signature help (insert mode)
-  `[d`              Go to previous diagnostic
-  `]d`              Go to next diagnostic
-  `<leader>ca`      Show code actions
-  `<leader>rn`      Rename symbol
-  `<leader>f`       Format document
-
 Available <Plug> Mappings:~
 
 *<Plug>(iwe-checklist-format)*     Format current line as checklist item
@@ -204,7 +219,6 @@ Available <Plug> Mappings:~
 *<Plug>(iwe-link-prev)*            Navigate to previous link
 *<Plug>(iwe-insert-date)*          Insert current date
 *<Plug>(iwe-insert-week)*          Insert current week
-*<Plug>(iwe-lsp-start)*            Manually start IWE LSP server
 
 Picker mappings (backend-agnostic):
 *<Plug>(iwe-picker-find-files)*    Find files (gf equivalent)
@@ -220,7 +234,6 @@ LSP mappings:
 *<Plug>(iwe-lsp-inline-reference)* Inline reference (refactor)
 *<Plug>(iwe-lsp-rewrite-list-section)* Rewrite list section (refactor)
 *<Plug>(iwe-lsp-rewrite-section-list)* Rewrite section list (refactor)
-*<Plug>(iwe-lsp-toggle-inlay-hints)* Toggle inlay hints
 *<Plug>(iwe-lsp-go-to-definition)* Go to definition
 *<Plug>(iwe-lsp-link)*             Create link from selection (visual mode)
 
@@ -306,12 +319,6 @@ require('iwe').get_project_root()                      *iwe.get_project_root()*
 
 require('iwe').is_in_project()                            *iwe.is_in_project()*
     Check if current buffer/directory is in an IWE project.
-
-require('iwe').start_lsp({bufnr})                            *iwe.start_lsp()*
-    Start the IWE LSP server for the specified buffer.
-
-require('iwe').lsp_available()                            *iwe.lsp_available()*
-    Check if the iwes LSP server is available in PATH.
 
 require('iwe').get_config()                                *iwe.get_config()*
     Get the current plugin configuration.
