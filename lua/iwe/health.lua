@@ -3,6 +3,21 @@ local M = {}
 
 local health = vim.health or require('health')
 
+---Check Neovim version requirements
+local function check_nvim_version()
+  health.start('Neovim Version')
+
+  if vim.fn.has('nvim-0.11.2') == 1 then
+    health.ok(string.format('Neovim %s (0.11.2+ required for LSP integration)',
+      tostring(vim.version())))
+  else
+    health.error('Neovim 0.11.2 or later is required for LSP integration', {
+      'Upgrade Neovim to 0.11.2 or later',
+      'The iwes server is enabled via vim.lsp.enable(), which needs 0.11.2+',
+    })
+  end
+end
+
 ---Check if iwes LSP server is available
 local function check_lsp_server()
   health.start('IWE LSP Server')
@@ -275,6 +290,7 @@ end
 
 ---Run all health checks
 function M.check()
+  check_nvim_version()
   check_lsp_server()
   check_project_structure()
   check_configuration()

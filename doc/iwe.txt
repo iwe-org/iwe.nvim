@@ -6,11 +6,12 @@ CONTENTS                                                          *iwe-contents*
 1. Introduction ............................ |iwe-introduction|
 2. Installation ............................ |iwe-installation|
 3. Configuration ........................... |iwe-configuration|
-4. Commands ................................ |iwe-commands|
-5. Key Mappings ............................ |iwe-mappings|
-6. Picker Backends ......................... |iwe-picker|
-7. Functions ............................... |iwe-functions|
-8. Health Checks ........................... |iwe-health|
+4. LSP Migration ........................... |iwe-lsp-migration|
+5. Commands ................................ |iwe-commands|
+6. Key Mappings ............................ |iwe-mappings|
+7. Picker Backends ......................... |iwe-picker|
+8. Functions ............................... |iwe-functions|
+9. Health Checks ........................... |iwe-health|
 
 ================================================================================
 INTRODUCTION                                                  *iwe-introduction*
@@ -39,11 +40,13 @@ Features:~
 ================================================================================
 INSTALLATION                                                  *iwe-installation*
 
-The plugin requires the `iwes` LSP server to be installed and available in
-your PATH. Create a `.iwe` directory in your project root to enable LSP
-functionality. LSP management is handled by Neovim's built-in |:lsp| commands
-(`:lsp enable iwes`, `:lsp disable iwes`, `:lsp restart`); the server config
-is provided by `lsp/iwes.lua` and the plugin enables it automatically.
+The plugin requires Neovim 0.11.2 or later and the `iwes` LSP server to be
+installed and available in your PATH. Create a `.iwe` directory in your
+project root to enable LSP functionality. The server config is provided by
+`lsp/iwes.lua` and the plugin enables it automatically via
+|vim.lsp.enable()|. Manage it with `vim.lsp.enable('iwes')` /
+`vim.lsp.enable('iwes', false)`, or — on Neovim 0.12+ — the built-in |:lsp|
+commands (`:lsp enable iwes`, `:lsp disable iwes`, `:lsp restart`).
 
 Optional picker dependencies (at least one recommended):
 • `nvim-telescope/telescope.nvim` - Full-featured fuzzy finder
@@ -106,6 +109,45 @@ telescope.enabled               Enable Telescope integration
 telescope.setup_config          Auto-setup Telescope configuration
 telescope.load_extensions       Extensions to load automatically
 
+================================================================================
+LSP MIGRATION                                                *iwe-lsp-migration*
+
+Earlier versions accepted an `lsp` table in `setup()` (`cmd`,
+`auto_format_on_save`, `enable_inlay_hints`, `enable_folding`,
+`debounce_text_changes`). These options were removed; passing `lsp = { ... }`
+shows a warning and has no effect. The server is configured in `lsp/iwes.lua`
+and managed by Neovim's built-in LSP client. The equivalents are standard
+Neovim configuration:
+
+Format on save (or use a plugin such as conform.nvim): >lua
+    vim.api.nvim_create_autocmd('LspAttach', {
+      callback = function(args)
+        local client = vim.lsp.get_client_by_id(args.data.client_id)
+        if client and client.name == 'iwes' then
+          vim.api.nvim_create_autocmd('BufWritePre', {
+            buffer = args.buf,
+            callback = function()
+              vim.lsp.buf.format({ async = false, bufnr = args.buf })
+            end,
+          })
+        end
+      end,
+    })
+<
+LSP-based folding (or use a plugin such as nvim-origami): >lua
+    vim.o.foldmethod = 'expr'
+    vim.o.foldexpr = 'v:lua.vim.lsp.foldexpr()'
+    vim.o.foldtext = 'v:lua.vim.lsp.foldtext()'
+<
+Inlay hints (see |vim.lsp.inlay_hint.enable()|): >lua
+    vim.lsp.inlay_hint.enable(true)
+<
+Server command or flags (extends `lsp/iwes.lua`, see |vim.lsp.config()|): >lua
+    vim.lsp.config('iwes', {
+      cmd = { '/path/to/iwes' },
+      flags = { debounce_text_changes = 500 },
+    })
+<
 ================================================================================
 COMMANDS                                                          *iwe-commands*
 

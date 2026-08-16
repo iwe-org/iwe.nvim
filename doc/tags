@@ -38,6 +38,7 @@ iwe-functions	iwe.txt	/*iwe-functions*
 iwe-health	iwe.txt	/*iwe-health*
 iwe-installation	iwe.txt	/*iwe-installation*
 iwe-introduction	iwe.txt	/*iwe-introduction*
+iwe-lsp-migration	iwe.txt	/*iwe-lsp-migration*
 iwe-mappings	iwe.txt	/*iwe-mappings*
 iwe-picker	iwe.txt	/*iwe-picker*
 iwe.get_config()	iwe.txt	/*iwe.get_config()*

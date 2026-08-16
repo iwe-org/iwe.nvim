@@ -47,6 +47,25 @@ describe('IWE Configuration', function()
     assert.are.equal(opts.preview.output_dir, '/tmp/valid-dir')
   end)
 
+  it('should warn about and ignore removed lsp options', function()
+    local notifications = {}
+    local original_notify = vim.notify
+    vim.notify = function(msg, level)
+      table.insert(notifications, { msg = msg, level = level })
+    end
+
+    local user_opts = { lsp = { auto_format_on_save = true } }
+    config.setup(user_opts)
+
+    vim.notify = original_notify
+
+    assert.are.equal(1, #notifications)
+    assert.is_truthy(notifications[1].msg:find('`lsp` setup options were removed', 1, true))
+    assert.are.equal(vim.log.levels.WARN, notifications[1].level)
+    assert.is_nil(config.get().lsp)
+    assert.is_not_nil(user_opts.lsp)
+  end)
+
   it('should handle get_value function', function()
     config.setup()
 

@@ -114,6 +114,16 @@ end
 function M.setup(opts)
   opts = opts or {}
 
+  if opts.lsp ~= nil then
+    opts = vim.tbl_extend("force", {}, opts)
+    opts.lsp = nil
+    vim.notify(
+      "iwe.nvim: the `lsp` setup options were removed. The server is now configured"
+        .. " via lsp/iwes.lua and Neovim's vim.lsp. See :help iwe-lsp-migration",
+      vim.log.levels.WARN
+    )
+  end
+
   local success, err = validate_config(opts)
   if not success then
     vim.notify(string.format("IWE configuration error: %s", err), vim.log.levels.ERROR)

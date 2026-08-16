@@ -17,8 +17,13 @@ function M.setup(opts)
 
   -- Enable the IWE LSP server via Neovim's built-in config (lsp/iwes.lua).
   -- Attaches automatically to markdown buffers inside a `.iwe` project.
-  if vim.fn.has('nvim-0.11') == 1 then
+  if vim.fn.has('nvim-0.11.2') == 1 then
     vim.lsp.enable('iwes')
+  else
+    vim.notify(
+      'iwe.nvim: LSP integration requires Neovim 0.11.2 or later',
+      vim.log.levels.WARN
+    )
   end
 
   require('iwe.mappings').setup_markdown_mappings()
