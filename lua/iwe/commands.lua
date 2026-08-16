@@ -1,16 +1,9 @@
 ---@class IWE.Commands
 local M = {}
 
-local lsp = require('iwe.lsp')
 local picker = require('iwe.picker')
 local preview = require('iwe.preview')
 
-
----Get completion for LSP commands
----@return string[]
-local function complete_lsp_commands()
-  return { 'start', 'stop', 'restart', 'status', 'toggle_inlay_hints' }
-end
 
 ---Get completion for Telescope commands (deprecated, kept for backward compatibility)
 ---@return string[]
@@ -52,42 +45,6 @@ local function init_iwe_project()
     else
       vim.notify("Failed to create .iwe directory", vim.log.levels.ERROR)
     end
-  end
-end
-
----Handle LSP subcommands
----@param subcmd string The subcommand (start, stop, restart, status)
-local function handle_lsp_command(subcmd)
-  if subcmd == 'start' then
-    lsp.start()
-    vim.notify("Started IWE LSP server")
-  elseif subcmd == 'stop' then
-    local clients = vim.lsp.get_clients({ name = 'iwes' })
-    for _, client in ipairs(clients) do
-      client.stop()
-    end
-    vim.notify("Stopped IWE LSP server")
-  elseif subcmd == 'restart' then
-    local clients = vim.lsp.get_clients({ name = 'iwes' })
-    for _, client in ipairs(clients) do
-      client.stop()
-    end
-    vim.defer_fn(function()
-      lsp.start()
-      vim.notify("Restarted IWE LSP server")
-    end, 500)
-  elseif subcmd == 'status' then
-    local clients = vim.lsp.get_clients({ name = 'iwes' })
-    if #clients > 0 then
-      vim.notify(string.format("IWE LSP server is running (%d client%s)",
-        #clients, #clients == 1 and "" or "s"))
-    else
-      vim.notify("IWE LSP server is not running")
-    end
-  elseif subcmd == 'toggle_inlay_hints' then
-    lsp.toggle_inlay_hints()
-  else
-    vim.notify(string.format("Unknown LSP command: %s", subcmd), vim.log.levels.ERROR)
   end
 end
 
@@ -185,13 +142,7 @@ local function iwe_command(opts)
     return
   end
 
-  if subcmd == 'lsp' then
-    if #args < 2 then
-      vim.notify("Usage: IWE lsp <start|stop|restart|status|toggle_inlay_hints>", vim.log.levels.ERROR)
-      return
-    end
-    handle_lsp_command(args[2])
-  elseif subcmd == 'telescope' or subcmd == 'tel' then
+  if subcmd == 'telescope' or subcmd == 'tel' then
     -- Deprecated: kept for backward compatibility
     if #args < 2 then
       vim.notify("Usage: IWE telescope <find_files|paths|roots|...>", vim.log.levels.ERROR)
@@ -211,13 +162,6 @@ local function iwe_command(opts)
     local lines = {
       "IWE Plugin Information:",
       "",
-      "LSP Configuration:",
-      string.format("  Command: %s", table.concat(config.lsp.cmd, " ")),
-      string.format("  Name: %s", config.lsp.name),
-      string.format("  Auto Format: %s", config.lsp.auto_format_on_save),
-      string.format("  Inlay Hints: %s", config.lsp.enable_inlay_hints),
-      string.format("  Debounce: %dms", config.lsp.debounce_text_changes),
-      "",
       "Mappings Configuration:",
       string.format("  Markdown Mappings: %s", config.mappings.enable_markdown_mappings),
       string.format("  Picker Keybindings: %s", config.mappings.enable_picker_keybindings),
@@ -235,7 +179,7 @@ local function iwe_command(opts)
       string.format("  Auto Open: %s", config.preview.auto_open),
       "",
       "Status:",
-      string.format("  LSP Available: %s", lsp.is_available() and "Yes" or "No")
+      string.format("  LSP Server: %s", vim.fn.executable('iwes') == 1 and "Available" or "Not found in PATH")
     }
 
     local clients = vim.lsp.get_clients({ name = 'iwes' })
@@ -254,7 +198,7 @@ local function iwe_command(opts)
     end
   else
     vim.notify(string.format("Unknown IWE command: %s", subcmd), vim.log.levels.ERROR)
-    vim.notify("Available: find_files, paths, roots, grep, backlinks, headers, lsp, preview, init, info",
+    vim.notify("Available: find_files, paths, roots, grep, backlinks, headers, preview, init, info",
       vim.log.levels.INFO)
   end
 end
@@ -275,7 +219,7 @@ local function complete_iwe_command(arg_lead, cmd_line, _)
       -- Direct picker commands (new)
       'find_files', 'paths', 'roots', 'grep', 'blockreferences', 'backlinks', 'headers',
       -- Command groups
-      'lsp', 'preview', 'prev', 'init', 'info',
+      'preview', 'prev', 'init', 'info',
       -- Deprecated (kept for backward compatibility)
       'telescope', 'tel',
     }
@@ -287,9 +231,7 @@ local function complete_iwe_command(arg_lead, cmd_line, _)
   -- If we're completing the second argument
   if arg_count == 2 then
     local subcmd = args[2]
-    if subcmd == 'lsp' then
-      return complete_lsp_commands()
-    elseif subcmd == 'telescope' or subcmd == 'tel' then
+    if subcmd == 'telescope' or subcmd == 'tel' then
       return complete_telescope_commands()
     elseif subcmd == 'preview' or subcmd == 'prev' then
       return complete_preview_commands()

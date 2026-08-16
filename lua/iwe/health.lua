@@ -67,12 +67,6 @@ local function check_configuration()
 
   local config = require('iwe.config').get()
 
-  -- Check LSP configuration
-  health.info(string.format('LSP command: %s', table.concat(config.lsp.cmd, ' ')))
-  health.info(string.format('LSP name: %s', config.lsp.name))
-  health.info(string.format('Auto format on save: %s', config.lsp.auto_format_on_save))
-  health.info(string.format('Debounce text changes: %dms', config.lsp.debounce_text_changes))
-
   -- Check mapping configuration
   health.info(string.format('Markdown mappings enabled: %s', config.mappings.enable_markdown_mappings))
   health.info(string.format('Telescope keybindings enabled: %s', config.mappings.enable_telescope_keybindings))

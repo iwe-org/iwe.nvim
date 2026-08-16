@@ -12,8 +12,6 @@ describe('IWE Plugin', function()
       iwe.setup()
       local opts = config.get()
 
-      assert.are.equal(opts.lsp.cmd[1], 'iwes')
-      assert.are.equal(opts.lsp.name, 'iwes')
       assert.are.equal(opts.mappings.enable_markdown_mappings, true)
       assert.are.equal(opts.mappings.enable_picker_keybindings, false)
       assert.are.equal(opts.mappings.enable_lsp_keybindings, false)

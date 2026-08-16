@@ -7,7 +7,7 @@ You can learn more at [IWE.md](https://iwe.md)
 ## Features
 
 - **🏗️ Project Initialization**: Create IWE projects with `:IWE init`
-- **🔍 LSP Integration**: Automatically starts `iwes` LSP server for `.iwe` projects
+- **🔍 LSP Integration**: Automatically enables the `iwes` LSP server for `.iwe` projects (via Neovim's built-in `vim.lsp.config`)
 - **🔭 Multi-Backend Picker**: Supports Telescope, fzf-lua, Snacks, mini.pick with vim.ui.select fallback
 - **📝 Markdown Enhancements**: Writing-focused features for markdown editing
 - **⚙️ Modern Architecture**: Type-safe, well-documented, with health checks
@@ -95,7 +95,6 @@ Open any `.md` file in your IWE project and enjoy:
 | `:IWE blockreferences` | LSP references (no declaration) |
 | `:IWE backlinks` | LSP references (with declaration) |
 | `:IWE headers` | Document symbols (headers) |
-| `:IWE lsp start/stop/restart/status/toggle_inlay_hints` | Control LSP server |
 | `:IWE preview squash/export/export-headers/export-workspace` | Generate previews |
 | `:IWE info` | Show plugin status and configuration |
 
@@ -110,16 +109,14 @@ The plugin provides preview generation using the IWE CLI:
 
 ## Configuration
 
+The LSP server is managed through Neovim's built-in `:lsp` commands
+(`:lsp enable iwes`, `:lsp disable iwes`, `:lsp restart`); its config lives in
+`lsp/iwes.lua` and activates for markdown files inside a `.iwe` project.
+
 The plugin works out of the box, but can be customized:
 
 ```lua
 require('iwe').setup({
-  lsp = {
-    cmd = { "iwes" },
-    auto_format_on_save = true,
-    enable_inlay_hints = true,
-    debounce_text_changes = 500
-  },
   mappings = {
     enable_markdown_mappings = true,  -- Core markdown editing keybindings
     enable_picker_keybindings = false, -- Set to true to enable gf, gs, ga, g/, gb, gR, go
@@ -183,24 +180,6 @@ IWE-specific refactoring actions in markdown files:
 |-----|--------|
 | `<leader>h` | Rewrite list section (refactor) |
 | `<leader>l` | Rewrite section list (refactor) |
-
-### Default Neovim LSP Keybindings
-
-Standard LSP actions are available when the LSP server is active:
-
-| Key | Action |
-|-----|--------|
-| `gD` | Go to declaration |
-| `gd` | Go to definition |
-| `gi` | Go to implementation |
-| `gr` | Show references |
-| `K` | Show hover documentation |
-| `<C-k>` | Show signature help (insert mode) |
-| `[d` | Go to previous diagnostic |
-| `]d` | Go to next diagnostic |
-| `<leader>ca` | Show code actions |
-| `<leader>rn` | Rename symbol |
-| `<leader>f` | Format document |
 
 ### Preview Keybindings (when `enable_preview_keybindings = true`)
 
