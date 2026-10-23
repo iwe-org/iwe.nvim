@@ -1,8 +1,8 @@
 # IWE Neovim Plugin
 
-**About IWE**: This plugin integrates with the [IWE](https://github.com/iwe-org/iwe) - an LSP/CLI designed for markdown-based knowledge management and note-taking workflows.
+**About IWE**: This plugin integrates with [IWE](https://iwe.md/docs/editors/neovim/), a Markdown knowledge base you and your AI agent work on together, through its LSP server and CLI.
 
-You can learn more at [IWE.md](https://iwe.md)
+You can learn more at [iwe.md](https://iwe.md)
 
 ## Features
 
