@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Auto-initialization now actually works without an explicit `require('iwe').setup()` call: the bootstrap hook moved into `plugin/iwe.lua`, which Neovim sources automatically (previously it lived inside the `iwe` module that nothing loaded, so the plugin stayed inert without a manual setup call).
 - The LSP server now starts for markdown buffers that were opened before the plugin initialized — in particular the file the editor was launched with, which fires its `FileType` event before `VimEnter`-time or lazy-loaded setup registers the autostart autocmd.
+- `:IWE preview` works against the current `iwe` CLI: it runs `iwe export --format dot` and `iwe squash --depth 3 <key>` instead of the rejected `iwe export dot` and `iwe squash --key`, keys the document by its path from the `.iwe` root (`plans/example-plan`, previously the basename `example-plan`), and runs `iwe` from that root whatever Neovim's working directory is. Previews of nested documents land in matching subdirectories of `output_dir`.
+- A failed export preview reports `iwe`'s error instead of a false success (the shell pipeline into `neato` returned `neato`'s exit status), and the squash preview writes the squashed document instead of an empty file, leaving no file behind when `iwe` fails.
 
 ## [1.0.0] - 2024-12-23
 
